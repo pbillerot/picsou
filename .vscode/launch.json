@@ -1,0 +1,175 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python : Fichier actuel",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Picsou",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "crudenome.py",
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "-a",
+                "picsou"
+            ],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },
+        {
+            "name": "Batch Note",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "picsou.py",
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "-note"
+            ],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },
+        {
+            "name": "Batch Quotes",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "picsou.py",
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "-quotes"
+            ],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },
+        {
+            "name": "Batch Trade",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "picsou.py",
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "-trades",
+            ],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },
+        {
+            "name": "Batch Graph quotes",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "picsou.py",
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "-graph"
+            ],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },
+        {
+            "name": "Batch Graph day",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "picsou.py",
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "-graphday"
+            ],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },
+        {
+            "name": "Batch Analyse",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "picsou.py",
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "-analyse"
+            ],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },
+        {
+            "name": "Batch Mail",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "picsou.py",
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "-mail"
+            ],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },
+        {
+            "name": "Batch ",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "picsou.py",
+            "cwd": "${workspaceRoot}",
+            "args": [],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },
+        {
+            "name": "Crudenome",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "crudenome.py",
+            "cwd": "${workspaceRoot}",
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },
+        {
+            "name": "Crudenome install",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "crudenome.py",
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "-install"
+            ],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },
+        {
+            "name": "Integrated Terminal/Console",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "pythonPath": "${command:python.interpreterPath}",
+            "program": "${file}",
+            "cwd": "",
+            "console": "integratedTerminal",
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },
+        {
+            "name": "External Terminal/Console",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "pythonPath": "${command:python.interpreterPath}",
+            "program": "${file}",
+            "cwd": "",
+            "console": "externalTerminal",
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        }
+    ]
+}

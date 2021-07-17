@@ -1,0 +1,83 @@
+<diagram program="umletino" version="14.4.0-SNAPSHOT"><zoom_level>10</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLPackage</id><coordinates><x>40</x><y>10</y><w>300</w><h>280</h></coordinates><panel_attributes>PTF
+halign=left
+valign=top
+bg=blue
+--
+CREATE TABLE "ptf" (
+	"ptf_id"	TEXT NOT NULL,
+	"ptf_name"	TEXT DEFAULT '',
+	"ptf_enabled"	INTEGER DEFAULT 0,
+	"ptf_top"	INTEGER DEFAULT 0,
+	"ptf_gain"	NUMERIC DEFAULT 0,
+	"ptf_note"	TEXT DEFAULT '',
+	"ptf_quote"	REAL DEFAULT 0,
+	"ptf_seuil_achat"	REAL DEFAULT 0,
+	"ptf_seuil_vente"	REAL DEFAULT 0,
+	"ptf_isin"	TEXT DEFAULT 0,
+	"ptf_rem"	TEXT DEFAULT '',
+	"ptf_trend"	TEXT DEFAULT '',
+	PRIMARY KEY("ptf_id")
+);
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>40</x><y>320</y><w>300</w><h>390</h></coordinates><panel_attributes>ORDERS
+halign=left
+valign=top
+bg=blue
+--
+CREATE TABLE "orders" (
+	"orders_id"	INTEGER NOT NULL,
+	"orders_name"	TEXT DEFAULT '',
+	"orders_ptf_id"	INTEGER DEFAULT 0,
+	"orders_order"	TEXT DEFAULT '',
+	"orders_time"	TEXT DEFAULT '',
+	"orders_quote"	REAL DEFAULT 0,
+	"orders_quantity"	INTEGER DEFAULT 0,
+	"orders_buy"	REAL DEFAULT 0,
+	"orders_sell"	REAL DEFAULT 0,
+	"orders_cost_price"	REAL DEFAULT 0,
+	"orders_cost"	REAL DEFAULT 0,
+	"orders_debit"	REAL DEFAULT 0,
+	"orders_credit"	REAL DEFAULT 0,
+	"orders_gain"	REAL DEFAULT 0,
+	"orders_gainp"	REAL DEFAULT 0,
+	"orders_sell_time"	TEXT DEFAULT '',
+	"orders_sell_cost"	REAL DEFAULT 0,
+	"orders_sell_gain"	REAL DEFAULT 0,
+	"orders_sell_gainp"	REAL DEFAULT 0,
+	"orders_rem"	TEXT DEFAULT '',
+	PRIMARY KEY("orders_id" AUTOINCREMENT)
+);
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>410</x><y>350</y><w>230</w><h>220</h></coordinates><panel_attributes>QUOTES
+halign=left
+valign=top
+bg=blue
+--
+CREATE TABLE "quotes" (
+	"id"	TEXT,
+	"name"	TEXT,
+	"date"	TEXT,
+	"open"	REAL,
+	"high"	REAL,
+	"low"	REAL,
+	"close"	REAL,
+	"close1"	REAL,
+	"adjclose"	REAL,
+	"volume"	INTEGER
+);
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLNote</id><coordinates><x>460</x><y>100</y><w>260</w><h>200</h></coordinates><panel_attributes>Quotes
+-
+get cookie
+lecture PTF
+-..
+csv_to_quotes
+- load QUOTES 30 derniers jours
+- calcul % / veille (col: close1)
+- delete records CDAYS &lt;&gt; de la date du jour
+- insertion CDAYS du cours du jour avec l'heure
+- update PTF avec la quote du jour
+- update PTF avec le % du jour
+-..
+calcul % de CDAYS
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLNote</id><coordinates><x>600</x><y>10</y><w>230</w><h>70</h></coordinates><panel_attributes>Note..
+bg=red
+la table CDAYS n'est plus nécessaire</panel_attributes><additional_attributes></additional_attributes></element></diagram>
