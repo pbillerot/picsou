@@ -1,4 +1,6 @@
 {
-    "python.pythonPath": "venv/bin/python",
+    "python.pythonPath": "/home/billerot/Carbone/picsou/venv/bin/python3.7",
     "python.linting.pylintPath": "venv/bin/python",
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true,
 }

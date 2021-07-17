@@ -18,16 +18,12 @@ pip3 install pygobject matplotlib requests
 ```
 ### Pour VSCodium
 - Installer l'extension ```ms-python.python```
-- Installer pylint pour python ```pip3 install pylint```
+- Installer pylint pour python ```pip3 install pylint rope```
 
 ## SQL
 - Utilisation de DB Browser for SQLite http://sqlitebrowser.org/
 - sudo apt install sqlitebrowser
 - Création des tables SQLite
-
-## Icones
-- sudo apt install gtk-3-examples
-- puis lancer gtk3-icon-browser
 
 ## Démarche
 

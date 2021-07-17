@@ -19,9 +19,7 @@ import sqlite3
 import matplotlib.pyplot as plt
 import numpy as np
 
-from crud import Crud
-
-class PicsouBatch():
+class Picsou():
     """ Actualisation des données """
     # Planification dans cron
     # 55 9,11,16 * * 1-5 /home/pi/git/crudenome/picsou_batch.py -quote -trade -sms
@@ -659,4 +657,4 @@ if __name__ == '__main__':
     if parser._get_args() == 0:
         parser.print_help()
     else:
-        PicsouBatch(parser.parse_args())
+        Picsou(parser.parse_args())

@@ -2,22 +2,14 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python : Fichier actuel",
-            "type": "python",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal"
-        },
-        {
             "name": "Picsou",
             "type": "python",
             "request": "launch",
             "stopOnEntry": false,
-            "program": "crudenome.py",
+            "program": "picsou.py",
             "cwd": "${workspaceRoot}",
             "args": [
-                "-a",
-                "picsou"
+                "-h"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"
