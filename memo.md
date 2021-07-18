@@ -9,10 +9,6 @@ sudo apt install virtualenv
 virtualenv --python=/usr/bin/python3 venv
 source venv/bin/activate
 
-# sudo apt install libgirepository1.0-dev gcc libcairo2-dev python3-dev python3-gi python3-gi-cairo gir1.2-gtk-3.0
-
-sudo apt install libgirepository1.0-dev gcc libcairo2-dev pkg-config python3-dev gir1.2-gtk-3.0
-
 pip3 install pygobject matplotlib requests
 
 ```

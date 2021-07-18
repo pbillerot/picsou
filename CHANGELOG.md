@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 - 
 
+1.0.0 du 18 juillet 2021
+----------------------
+- `fixed` picsou -h -quotes -graph
+
 0.2.0 du 17 juillet 2021
 ----------------------
 - `fixed` picsou -h 
@@ -12,10 +16,6 @@ Historique des modifications
 0.1.0 du 17 juillet 2021
 ----------------------
 - `added` picsou batch isolé du projet crudenome
-
-x.x.x 
-----------------------
-- historique non reportée dans ce document
 
 ###### Types de changements:
 - `added` *pour les nouvelles fonctionnalités.*  

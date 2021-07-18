@@ -41,19 +41,6 @@
             "envFile": "${workspaceRoot}/.env"
         },
         {
-            "name": "Batch Trade",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry": false,
-            "program": "picsou.py",
-            "cwd": "${workspaceRoot}",
-            "args": [
-                "-trades",
-            ],
-            "env": {},
-            "envFile": "${workspaceRoot}/.env"
-        },
-        {
             "name": "Batch Graph quotes",
             "type": "python",
             "request": "launch",
@@ -62,19 +49,6 @@
             "cwd": "${workspaceRoot}",
             "args": [
                 "-graph"
-            ],
-            "env": {},
-            "envFile": "${workspaceRoot}/.env"
-        },
-        {
-            "name": "Batch Graph day",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry": false,
-            "program": "picsou.py",
-            "cwd": "${workspaceRoot}",
-            "args": [
-                "-graphday"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"
@@ -113,16 +87,6 @@
             "program": "picsou.py",
             "cwd": "${workspaceRoot}",
             "args": [],
-            "env": {},
-            "envFile": "${workspaceRoot}/.env"
-        },
-        {
-            "name": "Crudenome",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry": false,
-            "program": "crudenome.py",
-            "cwd": "${workspaceRoot}",
             "env": {},
             "envFile": "${workspaceRoot}/.env"
         },

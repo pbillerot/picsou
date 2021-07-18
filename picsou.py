@@ -18,6 +18,7 @@ import requests
 import sqlite3
 import matplotlib.pyplot as plt
 import numpy as np
+from crud import Crud
 
 class Picsou():
     """ Actualisation des données """
@@ -41,14 +42,6 @@ class Picsou():
         if self.args.install:
             self.install()
 
-        if self.args.day:
-           self.run_day()
-           return
-
-        if self.args.dayrepeat:
-           self.day_repeat()
-           return
-
         if self.args.quotes:
             self.quotes()
 
@@ -63,7 +56,7 @@ class Picsou():
 
         self.display("Picsou en relache")
 
-    def _get_crumbs_and_cookies(self, stock):
+    def get_crumbs_and_cookies(self, stock):
       """
       get crumb and cookies for historical data csv download from yahoo finance
       parameters: stock - short-handle identifier of the company 
@@ -85,7 +78,6 @@ class Picsou():
         # return (header, crumb[0], website.cookies)
         return (header, '', website.cookies)
 
-    # def csv_to_quotes(self, ptf, nbj, cookie):
     def csv_to_quotes(self, ptf, nbj, header, cookies):
         """
         Récupération des derniers cours d'une action
@@ -167,9 +159,9 @@ class Picsou():
         SELECT * FROM ptf where ptf_enabled = '1' ORDER BY ptf_id
         """, {})
         # Partage du header et du cookie entre toutes les requêtes
-        header, crumb, cookies = self._get_crumbs_and_cookies('ACA.PA')
+        header, crumb, cookies = self.get_crumbs_and_cookies('ACA.PA')
         
-        self.pout("Quote of ")
+        self.pout("Quote of")
         for ptf in ptfs:
             self.pout(" {}".format(ptf["ptf_id"]))
             close1_last = 0.0
@@ -199,14 +191,14 @@ class Picsou():
             where cdays_date <> date('now')
             """, {})
             # insertion du dernier cours récupéré dans self.quote
-            self.crud.exec_sql(self.crud.get_basename(), """
-            insert into cdays
-            (cdays_ptf_id, cdays_name, cdays_date, cdays_close
-            , cdays_open, cdays_volume, cdays_low, cdays_high, cdays_time, cdays_close1)
-            select id, name, date, close, open, volume, low, high, datetime('now', 'localtime'), close1
-            from quotes
-            where quotes.id = :id and quotes.date = date('now')
-            """, {"id": ptf["ptf_id"]})
+            # self.crud.exec_sql(self.crud.get_basename(), """
+            # insert into cdays
+            # (cdays_ptf_id, cdays_name, cdays_date, cdays_close
+            # , cdays_open, cdays_volume, cdays_low, cdays_high, cdays_time, cdays_close1)
+            # select id, name, date, close, open, volume, low, high, datetime('now', 'localtime'), close1
+            # from quotes
+            # where quotes.id = :id and quotes.date = date('now')
+            # """, {"id": ptf["ptf_id"]})
 
             self.crud.exec_sql(self.crud.get_basename(), """
             update ptf set ptf_quote = :close where ptf_id = :id
@@ -218,56 +210,12 @@ class Picsou():
             # self.pout(" {}/{}".format(self.quote["close"], close1_last))
 
         # calcul cours_percent
-        self.crud.exec_sql(self.crud.get_basename(), """
-        UPDATE cdays
-        set cdays_percent = ( (cdays_close - cdays_close1) / cdays_close1) * 100 
-        """, {})
+        # self.crud.exec_sql(self.crud.get_basename(), """
+        # UPDATE cdays
+        # set cdays_percent = ( (cdays_close - cdays_close1) / cdays_close1) * 100 
+        # """, {})
 
         self.display("")
-
-    def day_repeat(self):
-        """ Lancement toutes les 5 minutes de day """
-        time1 = time.time()
-        isStart = True
-        while True:
-            time2 = time.time()
-            if isStart :
-                now = datetime.datetime.now()
-                today0910 = now.replace(hour=9, minute=12, second=0, microsecond=0)
-                today1750 = now.replace(hour=17, minute=50, second=0, microsecond=0)
-                if now > today0910 and now < today1750 :
-                    self.run_day()
-                else:
-                    self.display("Picsou en dehors de la plage autorisée".format())
-            isStart = False
-            if ( (time2-time1) > 5 * 60 ):
-                now = datetime.datetime.now()
-                today0910 = now.replace(hour=9, minute=12, second=0, microsecond=0)
-                today1750 = now.replace(hour=17, minute=50, second=0, microsecond=0)
-                if now > today0910 and now < today1750 :
-                        self.run_day()
-                        time1 = time2
-                else:
-                    self.display("Picsou en dehors de la plage autorisée".format())
-                    time1 = time2
-            time.sleep(1)
-
-    def run_day(self):
-        self.display(datetime.datetime.now().strftime("%Y/%m/%d, %H:%M:%S") + " : Picsou se démène..." )
-        
-        if self.args.quote:
-            loader = PicsouLoader(self, self.crud)
-            loader.quotes()
-
-        if self.args.graph:
-            self.display("")
-            self.graphQuotes()
-
-        if self.args.trade:
-            loader = PicsouLoader(self, self.crud)
-            loader.trade(with_sms=self.args.sms)
-
-        self.display(datetime.datetime.now().strftime("%Y/%m/%d, %H:%M:%S") + " : Picsou se repose" )
 
     def update_note(self):
         """ Mise à jour du champ note avec des infos pertinentes pour le trading """
@@ -295,6 +243,8 @@ class Picsou():
             if note != "" :
                 self.display("{} : {}".format(ptf["ptf_id"], note))
 
+    # Récupération des graphiques sur investir.lesechos.fr
+    # sur 1 an
     def graphAnalyse(self):
         """ 
         "url": "https://investir.lesechos.fr/charts/gif/{_ptf_isin}.gif",       
@@ -303,7 +253,7 @@ class Picsou():
         ptfs = self.crud.sql_to_dict(self.crud.get_basename(), """
         SELECT * FROM ptf where ptf_enabled = '1' ORDER BY ptf_id
         """, {})
-        self.pout("graphAnalyse... ")
+        self.pout("Graph of")
         for ptf in ptfs:
             self.pout(" " + ptf["ptf_id"] + "")
             url = "https://investir.lesechos.fr/charts/gif/{}.gif".format(ptf["ptf_isin"])
@@ -645,8 +595,6 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(prog='picsou_batch')
     # add a -c/--color option
-    parser.add_argument('-day', action='store_true', default=False, help="Requête des cours du jour")
-    parser.add_argument('-dayrepeat', action='store_true', default=False, help="Requête des cours du jour toutes les 5 minutes")
     parser.add_argument('-sms', action='store_true', default=False, help="Envoi de SMS de recommandation")
     parser.add_argument('-graph', action='store_true', default=False, help="Création graphique derniers cours")
     parser.add_argument('-note', action='store_true', default=False, help="Mise à jour du bloc note")
