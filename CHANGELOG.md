@@ -3,7 +3,11 @@
 Historique des modifications
 
 ### À venir :
-- 
+- delete config.json
+
+1.0.2 du 18 juillet 2021
+----------------------
+- `changed` nettoyage config.json
 
 1.0.1 du 18 juillet 2021
 ----------------------

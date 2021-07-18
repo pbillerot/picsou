@@ -70,16 +70,6 @@ class Crud:
                 param = self.config[key]
                 if not isinstance(self.config[key], dict):
                     self.config[key] = self.config[key].replace("~", os.path.expanduser("~"))
-            # chargement de local.json et fusion dans config
-            if self.config["local_config"]:
-                with open(self.config["local_config"]) as json_data_file:
-                    conf = json.load(json_data_file)
-                    self.config.update(conf)
-
-            # Remplacement de ~
-            for key in self.config:
-                if isinstance(self.config[key], str):
-                    self.config[key] = self.config[key].replace("~", os.path.expanduser("~"))
         else:
             if duplicate:
                 self.application = dict(crud.application)
