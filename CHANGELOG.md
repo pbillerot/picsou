@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 - 
 
+1.0.1 du 18 juillet 2021
+----------------------
+- `added` readme avec images
+
 1.0.0 du 18 juillet 2021
 ----------------------
 - `fixed` picsou -h -quotes -graph
