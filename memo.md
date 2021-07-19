@@ -26,3 +26,5 @@ pip3 install pygobject matplotlib requests
 ## Dessins
 https://drive.google.com/open?id=1v-FKCZdRNJAXW89Xy-yA2kBaMQPxnXQT
 
+## docker
+docker exec -it beenux /bin/sh

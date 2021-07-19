@@ -1,0 +1,26 @@
+# https://gist.github.com/w0rldart/1d5c5204723690d6b5845e4d7da06595
+# https://www.digitalocean.com/community/tutorials/how-to-use-traefik-1-7-21-as-a-reverse-proxy-for-docker-containers-on-centos-7-2"
+
+version: "3.3"
+services:
+  beenux:
+    build:
+      context: .
+    image: beenux
+    container_name: beenux
+    restart: unless-stopped
+    # user: 1000:1000
+    # ports:
+    # - "8080:8080"
+    volumes:
+    - /volshare:/volshare
+    networks:
+    - docker_web
+
+volumes:
+  certs:
+
+networks:
+  docker_web:
+    external: true
+      

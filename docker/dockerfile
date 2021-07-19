@@ -1,0 +1,48 @@
+# IMAGE UBUNTU
+FROM ubuntu:20.04
+MAINTAINER Philippe Billerot
+
+# Installation des packages complémentaires
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-pip \
+    git \
+    cron \
+    logrotate \
+    && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Installation de python et de pip
+RUN pip3 install --upgrade pip
+
+RUN pip3 install --no-cache-dir requests matplotlib
+
+# Rotation des logs
+COPY logrotate.conf /etc/logrotate.conf
+
+# Ajout du user 1000 tux
+RUN adduser --disabled-password --gecos '' tux
+USER tux
+
+# Installation de picsou
+WORKDIR /home/tux
+RUN git clone https://github.com/pbillerot/picsou.git
+RUN mkdir /home/tux/picsou/log
+
+# Planification des travaux
+WORKDIR /home/tux
+COPY cron.crontab cron.crontab
+RUN crontab cron.crontab
+RUN crontab -l
+
+# Démarrage d'un processus pour maintenir le container en activité'
+WORKDIR /home/tux
+CMD ["python3", "-m", "http.server", "8080"]
+
+
+# docker image build -t beenux:latest .
+# docker run --name beenux -p 3945:3945 -d beenux:latest
+# docker container ps
+# docker stop beenux
+# docker start beenux

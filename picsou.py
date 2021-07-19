@@ -17,7 +17,6 @@ import re
 import requests
 import sqlite3
 import matplotlib.pyplot as plt
-import numpy as np
 from crud import Crud
 
 class Picsou():
@@ -38,9 +37,6 @@ class Picsou():
         self.crud.set_application(application)
 
         self.display("Picsou en action...")
-
-        if self.args.install:
-            self.install()
 
         if self.args.quotes:
             self.quotes()
@@ -149,10 +145,6 @@ class Picsou():
         """ docstring """
         sys.stdout.write(msg)
         sys.stdout.flush()
-
-    def install(self):
-        """installation du .desktop """
-        os.system("cp picsou.desktop ~./local/share/applications/picsou.deskop")
 
     def quotes(self):       
         ptfs = self.crud.sql_to_dict(self.crud.get_basename(), """
@@ -280,7 +272,7 @@ class Picsou():
         def mini_date(sdate):
             return sdate[8:10] + "-" + sdate[5:7]
 
-        self.pout("graphQuotes... ")
+        self.pout("Graph of")
 
         seuil_vente = self.crud.get_application_prop("constants")["seuil_vente"]
         seuil_achat = self.crud.get_application_prop("constants")["seuil_achat"]
@@ -344,8 +336,6 @@ class Picsou():
         dlow_n= []
         dvol = []
         labelx = []
-        emas = []
-        smas = []
         ptf_name = ""
         qclose1 = 0
         if len(quotes) > 0:
@@ -372,8 +362,6 @@ class Picsou():
                     dcost.append(cost[id_current])
                     doptimum.append(optimum[id_current])
                     dseuil.append(seuil[id_current])
-                    smas.append(self.sma(dquotes, iquote if iquote < 12 else 12)) 
-                    emas.append(self.ema(dquotes, iquote if iquote < 12 else 12)) 
                     ddate.append(mini_date(quote["date"]) + " open")
                     labelx.append(mini_date(quote["date"]))
                     dzero.append(0)
@@ -411,8 +399,6 @@ class Picsou():
                     dcost.append(cost[id_current])
                     doptimum.append(optimum[id_current])
                     dseuil.append(seuil[id_current])
-                    smas.append(self.sma(dquotes, iquote if iquote < 12 else 12)) 
-                    emas.append(self.ema(dquotes, iquote if iquote < 12 else 12)) 
                     ddate.append(mini_date(quote["date"]) + " close")
                     labelx.append("")
                     dzero.append(0)
@@ -463,8 +449,6 @@ class Picsou():
                         else:
                             if seuil[id_current] != 0:
                                 ax1.plot(ddate, dseuil, 'b-', label="Seuil achat {} %".format(seuil_achat*100), linewidth=2)
-                        ax1.plot(ddate, emas, 'm:', label='EMA')
-                        ax1.plot(ddate, smas, 'c:', label='SMA')
                         ax1.set_ylabel('Cotation en €', fontsize=9)
                         ax1.tick_params(axis="x", labelsize=8)
                         ax1.tick_params(axis="y", labelsize=8)
@@ -537,8 +521,6 @@ class Picsou():
                     dlow_n.clear()
                     dzero.clear()
                     dvol.clear()
-                    emas.clear()
-                    smas.clear()
                     labelx.clear()
                     id_current = quote["id"]
                     qclose1 = quote["open"]
@@ -548,49 +530,6 @@ class Picsou():
                 draw()
             self.pout("\n")
 
-    def rsi(self, data, n=14):
-        deltas = np.diff(data)
-        seed = deltas[:n+1]
-        up = seed[seed>=0].sum()/n
-        down = -seed[seed<0].sum()/n
-        rs = up/down
-        rsi = np.zeros_like(data)
-        rsi[:n] = 100. - 100./(1.+rs)
-
-        for i in range(n, len(data)):
-            delta = deltas[i-1]
-            if delta > 0:
-                upval = delta
-                downval = 0.
-            else:
-                upval = 0.
-                downval = -delta
-
-            up = (up*(n-1) + upval)/n
-            down = (down*(n-1) + downval)/n
-            rs = up/down
-            rsi[i] = 100. - 100./(1.+rs)
-        return rsi[len(rsi)-1]
-
-    def ema(self, data, window):
-        """ Calculates Exponential Moving Average """
-        if len(data) < 2 * window:
-            window = len(data)//2
-            if window < 2 : return None
-            # raise ValueError("data is too short")
-        c = 2.0 / (window + 1)
-        current_ema = self.sma(data[-window*2:-window], window)
-        for value in data[-window:]:
-            current_ema = (c * value) + ((1 - c) * current_ema)
-        return current_ema        
-
-
-    def sma(self, data, window):
-        """ Calculates Simple Moving Average """
-        if len(data) < window:
-            return sum(data) / float(len(data))
-        return sum(data[-window:]) / float(window)
-
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(prog='picsou_batch')
@@ -598,7 +537,6 @@ if __name__ == '__main__':
     parser.add_argument('-sms', action='store_true', default=False, help="Envoi de SMS de recommandation")
     parser.add_argument('-graph', action='store_true', default=False, help="Création graphique derniers cours")
     parser.add_argument('-note', action='store_true', default=False, help="Mise à jour du bloc note")
-    parser.add_argument('-install', action='store_true', default=False, help="Installation dans Gnome")
     parser.add_argument('-quotes', action='store_true', default=False, help="Récupération des cours du jour")
     parser.add_argument('-analyse', action='store_true', default=False, help="Récupération des graphiques d'analyse")
     # print parser.parse_args()

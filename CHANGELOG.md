@@ -3,7 +3,11 @@
 Historique des modifications
 
 ### À venir :
-- delete config.json
+- 
+
+1.1.0 du 19 juillet 2021
+----------------------
+- `added` installation de picsou dans un container docker
 
 1.0.2 du 18 juillet 2021
 ----------------------
