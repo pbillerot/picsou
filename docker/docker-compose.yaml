@@ -9,11 +9,9 @@ services:
     image: beenux
     container_name: beenux
     restart: unless-stopped
-    # user: 1000:1000
-    # ports:
-    # - "8080:8080"
     volumes:
-    - /volshare:/volshare
+      - /volshare:/volshare
+      - /volshare/logs:/var/log
     networks:
     - docker_web
 

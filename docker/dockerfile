@@ -1,6 +1,13 @@
 # IMAGE UBUNTU
 FROM ubuntu:20.04
-MAINTAINER Philippe Billerot
+MAINTAINER pbillerot@github.com
+
+# ENVIRONNEMENT
+ENV DEBIAN_FRONTEND="noninteractive"
+ENV TZ=Europe/Paris
+
+# TIMEZONE
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Installation des packages complémentaires
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -9,37 +16,41 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     cron \
     logrotate \
+    moreutils \
+    nano \
+    tzdata \
     && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Installation de python et de pip
-RUN pip3 install --upgrade pip
+# ROTATION DES LOGS
+ADD logrotate.conf /etc/logrotate.conf
 
+# INSTALLATION DES EXTENSIONS PYTHON
+RUN pip3 install --upgrade pip
 RUN pip3 install --no-cache-dir requests matplotlib
 
-# Rotation des logs
-COPY logrotate.conf /etc/logrotate.conf
-
-# Ajout du user 1000 tux
-RUN adduser --disabled-password --gecos '' tux
-USER tux
-
-# Installation de picsou
-WORKDIR /home/tux
+# INSTALLATION DE PICSOU
+WORKDIR /app
 RUN git clone https://github.com/pbillerot/picsou.git
-RUN mkdir /home/tux/picsou/log
 
-# Planification des travaux
-WORKDIR /home/tux
-COPY cron.crontab cron.crontab
-RUN crontab cron.crontab
+# INIT DU LOG FILE
+RUN echo "Beenux en action..." >/var/log/beenux.log
+RUN chmod 0644 /var/log/beenux.log
+
+# PLANIFICATION DES TRAVAUX
+ADD cron.crontab ./cron.crontab
+RUN chmod 0644 ./cron.crontab
+RUN crontab ./cron.crontab
 RUN crontab -l
 
-# Démarrage d'un processus pour maintenir le container en activité'
-WORKDIR /home/tux
-CMD ["python3", "-m", "http.server", "8080"]
+# POINT D'ENTREE
+ADD entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+ENTRYPOINT ["./entrypoint.sh"]
 
+# Planification des travaux
+# WORKDIR /home/tux
 
 # docker image build -t beenux:latest .
 # docker run --name beenux -p 3945:3945 -d beenux:latest

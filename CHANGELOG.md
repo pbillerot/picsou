@@ -5,6 +5,12 @@ Historique des modifications
 ### À venir :
 - 
 
+1.2.0 du 19 juillet 2021
+----------------------
+- `added` docker timezone Europe/Paris
+- `added` docker crontab ok
+- `added` docker entrypoint.sh
+
 1.1.0 du 19 juillet 2021
 ----------------------
 - `added` installation de picsou dans un container docker

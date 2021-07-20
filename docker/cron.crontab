@@ -9,12 +9,13 @@
 # *  *  *  *  *  user command to be executed
 
 # Picsou Analyse à 7h10 
-10 7 * * 1-5 python3 /home/tux/picsou/picsou.py -analyse >>/volshare/logs/picsou.log 2>&1
+10 7 * * 1-5 python3 /app/picsou/picsou.py -analyse | ts >>/var/log/beenux.log
+
 # Picsou Quotes et Graph du lundi au vendredi de 9h à 18h toutes les 5 minutes
-*/5 9-17 * * 1-5 python3 /home/tux/picsou/picsou.py -quotes -graph >>/volshare/logs/picsou.log 2>&1
+*/5 9-17 * * 1-5 python3 /app/picsou/picsou.py -quotes | ts >>/var/log/beenux.log
 
 # Toutes les 6 minutes
-*/6 * * * * echo "Le temps qui passe en ne faisant rien..." >>/volshare/logs/picsou.log 2>&1
+*/6 * * * * echo "Le temps qui passe en ne faisant rien..." | ts >>/var/log/beenux.log
 
 # crontab cron.crontab
 # crontab -l
