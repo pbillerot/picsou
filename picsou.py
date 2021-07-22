@@ -178,10 +178,10 @@ class Picsou():
                     close1 = quote["close"]
 
             # Suppression des cours des jours antérieurs
-            self.crud.exec_sql(self.crud.get_basename(), """
-            delete from cdays
-            where cdays_date <> date('now')
-            """, {})
+            # self.crud.exec_sql(self.crud.get_basename(), """
+            # delete from cdays
+            # where cdays_date <> date('now')
+            # """, {})
             # insertion du dernier cours récupéré dans self.quote
             # self.crud.exec_sql(self.crud.get_basename(), """
             # insert into cdays

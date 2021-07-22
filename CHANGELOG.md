@@ -6,6 +6,10 @@ Historique des modifications
 - vérifier rotation de beenux.log
 - vérifier rotation des logs de docker
 
+1.2.2 du 22 juillet 2021
+----------------------
+- `fixed` arrêt utilisation de cdays
+
 1.2.1 du 22 juillet 2021
 ----------------------
 - `fixed` logger non initialisé
