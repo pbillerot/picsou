@@ -3,12 +3,17 @@
 Historique des modifications
 
 ### À venir :
-- 
+- vérifier rotation de beenux.log
+- vérifier rotation des logs de docker
+
+1.2.1 du 22 juillet 2021
+----------------------
+- `fixed` logger non initialisé
 
 1.2.0 du 19 juillet 2021
 ----------------------
 - `added` docker timezone Europe/Paris
-- `added` docker crontab ok
+- `added` docker crontab oks
 - `added` docker entrypoint.sh
 
 1.1.0 du 19 juillet 2021

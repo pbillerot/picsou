@@ -53,7 +53,7 @@ class Crud:
     def __init__(self, crud=None, duplicate=False):
         """ Initialisation """
 
-        # self.init_logger()
+        self.init_logger()
 
         """
         Chargement du dictionnaire config.json
@@ -79,7 +79,7 @@ class Crud:
                 self.application = crud.application
                 self.ctx = crud.ctx
                 self.config = crud.config
-
+        self.logger.info("Config %s", self.config)
     #
     # FONCTIONS GENERALES
     #
@@ -114,9 +114,10 @@ class Crud:
 
         # création d'un second handler qui va rediriger chaque écriture de log
         # sur la console
-        # stream_handler = logging.StreamHandler()
-        # stream_handler.setLevel(logging.DEBUG)
-        # self.logger.addHandler(stream_handler)
+        stream_handler = logging.StreamHandler()
+        # stream_handler.setLevel(logging.INFO)
+        stream_handler.setFormatter(formatter)
+        self.logger.addHandler(stream_handler)
 
     def get_json_content(self, path):
         """

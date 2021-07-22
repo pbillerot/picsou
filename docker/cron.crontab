@@ -15,7 +15,7 @@
 */5 9-17 * * 1-5 python3 /app/picsou/picsou.py -quotes | ts >>/var/log/beenux.log
 
 # Toutes les 6 minutes
-*/6 * * * * echo "Le temps qui passe en ne faisant rien..." | ts >>/var/log/beenux.log
+*/7 * * * * echo "DO RE MI FA SO LA SI..." | ts >>/var/log/beenux.log
 
 # crontab cron.crontab
 # crontab -l
