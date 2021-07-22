@@ -6,6 +6,10 @@ Historique des modifications
 - vérifier rotation de beenux.log
 - vérifier rotation des logs de docker
 
+1.2.3 du 22 juillet 2021
+----------------------
+- `changed` affichage debug load logger enlevé
+
 1.2.2 du 22 juillet 2021
 ----------------------
 - `fixed` arrêt utilisation de cdays

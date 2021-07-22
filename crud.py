@@ -89,7 +89,7 @@ class Crud:
             result = requests.get(self.config["sms"] % requests.utils.quote(msg))
         except Exception as ex:
             self.logger.error(getattr(ex, 'message', repr(ex)))
-        self.logger.info("SMS %s %s %s", result.status_code, result.headers, result.content)
+        # self.logger.info("SMS %s %s %s", result.status_code, result.headers, result.content)
 
     def init_logger(self):
         """ Initialisation du logger """
