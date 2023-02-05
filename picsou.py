@@ -15,6 +15,7 @@ import sys
 import glob
 import re
 import requests
+import random
 import sqlite3
 import matplotlib.pyplot as plt
 from crud import Crud
@@ -45,7 +46,8 @@ class Picsou():
            self.graphQuotes()
 
         if self.args.analyse:
-           self.graphAnalyse()
+        #  self.graphAnalyseEcho()
+           self.graphAnalyseBoursier()
 
         if self.args.note:
            self.update_note()
@@ -237,7 +239,7 @@ class Picsou():
 
     # Récupération des graphiques sur investir.lesechos.fr
     # sur 1 an
-    def graphAnalyse(self):
+    def graphAnalyseEcho(self):
         """ 
         "url": "https://investir.lesechos.fr/charts/gif/{_ptf_isin}.gif",       
         """
@@ -257,6 +259,38 @@ class Picsou():
             else:
                 if response.status_code == 200:
                     path = "{}/png/ana/{}.gif".format(self.crud.get_application_prop("data_directory"), ptf["ptf_id"])
+                    response.raw.decode_content = True
+                    with open(path,'wb') as f:
+                        shutil.copyfileobj(response.raw, f)
+                else:
+                    self.crud.logger.error("%s %s %s", ptf["ptf_id"], response.status_code, url)
+                    self.pout(" err:{}".format(response.status_code))
+
+        self.pout("\n")
+
+    # Récupération des graphiques sur boursier.com
+    # sur 1 ans
+    def graphAnalyseBoursier(self):
+        """ 
+        https://cdn-graph.boursier.com/Chart.aspx?p=nbcnormal&qt=candle&vt=line&pla1=2&pld1=1&s1={ptf_isin},FR&xx={date_12}&d=974,680,0&gd=71&g=qv&rnd={rnd}
+        """
+
+        start_date = datetime.datetime.now() - datetime.timedelta(weeks=52)
+        ptfs = self.crud.sql_to_dict(self.crud.get_basename(), """
+        SELECT * FROM ptf where ptf_enabled = '1' ORDER BY ptf_id
+        """, {})
+        self.pout("Graph of")
+        for ptf in ptfs:
+            self.pout(" " + ptf["ptf_id"] + "")
+            url = "https://cdn-graph.boursier.com/Chart.aspx?p=nbcnormal&qt=candle&vt=line&pla1=2&pld1=1&s1={},FR&xx={}&d=974,680,0&gd=71&g=qv&rnd={}".format(ptf["ptf_isin"], str(start_date)[:10], random.randrange(10000))
+            try:
+                response = requests.get(url, stream = True)
+            except Exception as ex:
+                self.crud.logger.error("%s %s %s", ptf["ptf_id"], url, getattr(ex, 'message', repr(ex)))
+                self.pout(getattr(ex, 'message', repr(ex)))
+            else:
+                if response.status_code == 200:
+                    path = "{}/png/ana/{}.png".format(self.crud.get_application_prop("data_directory"), ptf["ptf_id"])
                     response.raw.decode_content = True
                     with open(path,'wb') as f:
                         shutil.copyfileobj(response.raw, f)

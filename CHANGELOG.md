@@ -6,9 +6,9 @@ Historique des modifications
 - vérifier rotation de beenux.log
 - vérifier rotation des logs de docker
 
-1.2.4 du 22 juillet 2021
+1.3.0 du 5 février 2023
 ----------------------
-- `changed` seuil vente 3%
+- `changed` image analyse issue de boursier.com au lieu des echos obsolète
 
 1.2.3 du 22 juillet 2021
 ----------------------
