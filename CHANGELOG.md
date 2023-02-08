@@ -6,6 +6,11 @@ Historique des modifications
 - vérifier rotation de beenux.log
 - vérifier rotation des logs de docker
 
+1.3.1 du 8 février 2023
+----------------------
+- `added` image analyse issue de boursier.com
+- `changed` image historique issue de boursier.com
+
 1.3.0 du 5 février 2023
 ----------------------
 - `changed` image analyse issue de boursier.com au lieu des echos obsolète

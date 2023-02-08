@@ -14,6 +14,8 @@ CREATE TABLE "ptf" (
 	"ptf_isin"	TEXT DEFAULT 0,
 	"ptf_rem"	TEXT DEFAULT '',
 	"ptf_trend"	TEXT DEFAULT '',
+	"ptf_url_analyse"	TEXT DEFAULT '',
+	"ptf_url_histo"	TEXT DEFAULT '',
 	PRIMARY KEY("ptf_id")
 );
 

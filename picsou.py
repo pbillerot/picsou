@@ -46,8 +46,7 @@ class Picsou():
            self.graphQuotes()
 
         if self.args.analyse:
-        #  self.graphAnalyseEcho()
-           self.graphAnalyseBoursier()
+           self.graphFromBoursier()
 
         if self.args.note:
            self.update_note()
@@ -75,6 +74,51 @@ class Picsou():
 
         # return (header, crumb[0], website.cookies)
         return (header, '', website.cookies)
+
+    def get_crumbs_and_cookies_of_url(self, url):
+      """
+      get crumb and cookies for historical data csv download from yahoo finance
+      parameters: stock - short-handle identifier of the company 
+      returns a tuple of header, crumb and cookie
+      """
+      with requests.session():
+        header = {'Connection': 'keep-alive',
+                   'Expires': '-1',
+                   'Upgrade-Insecure-Requests': '1',
+                   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) \
+                   AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36'
+                   }
+        
+        website = requests.get(url, headers=header)
+        return (header, '', website.cookies)
+
+    def get_content_form_url(self, url, header, cookies):
+        """
+        Obtenir le contenu d'une requête http(s)
+        """
+        content = ""
+        with requests.Session() as req:
+            conn = None
+            try:
+                res = req.get(url, headers=header, cookies=cookies)
+                content = res.content.decode("utf-8")
+            except ValueError:
+                self.crud.logger.error("Error %s %s", ValueError, url)
+        return content
+
+    def get_bytes_form_url(self, url):
+        """
+        Obtenir le contenu d'une requête http(s)
+        """
+        with requests.Session() as req:
+            header = {'Connection': 'keep-alive',
+                'Expires': '-1',
+                'Upgrade-Insecure-Requests': '1',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) \
+                AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36'
+            }
+            res = req.get(url, headers=header)
+        return res.content
 
     def csv_to_quotes(self, ptf, nbj, header, cookies):
         """
@@ -268,35 +312,50 @@ class Picsou():
 
         self.pout("\n")
 
-    # Récupération des graphiques sur boursier.com
-    # sur 1 ans
-    def graphAnalyseBoursier(self):
+    # Récupération historique et analyse technique sur boursier.com
+    def graphFromBoursier(self):
         """ 
-        https://cdn-graph.boursier.com/Chart.aspx?p=nbcnormal&qt=candle&vt=line&pla1=2&pld1=1&s1={ptf_isin},FR&xx={date_12}&d=974,680,0&gd=71&g=qv&rnd={rnd}
+        Récupération historique et analyse technique sur boursier.com
+        https://www.boursier.com/actions/privileges/analyse-technique/<air-liquide>-<FR0000120073>,FR.html
+        https://regex101.com/
+        https://cdn-static.boursier.com/illustrations/feeds/daybyday/at/13554120230207050050.gif
+        regexp ".*/daybyday\/.*\/(.+?).gif.*"gm
         """
+        header, crumb, cookies = self.get_crumbs_and_cookies_of_url("https://www.boursier.com/")
+        start_date_histo = datetime.datetime.now() - datetime.timedelta(weeks=52)
 
-        start_date = datetime.datetime.now() - datetime.timedelta(weeks=52)
         ptfs = self.crud.sql_to_dict(self.crud.get_basename(), """
         SELECT * FROM ptf where ptf_enabled = '1' ORDER BY ptf_id
         """, {})
         self.pout("Graph of")
         for ptf in ptfs:
             self.pout(" " + ptf["ptf_id"] + "")
-            url = "https://cdn-graph.boursier.com/Chart.aspx?p=nbcnormal&qt=candle&vt=line&pla1=2&pld1=1&s1={},FR&xx={}&d=974,680,0&gd=71&g=qv&rnd={}".format(ptf["ptf_isin"], str(start_date)[:10], random.randrange(10000))
-            try:
-                response = requests.get(url, stream = True)
-            except Exception as ex:
-                self.crud.logger.error("%s %s %s", ptf["ptf_id"], url, getattr(ex, 'message', repr(ex)))
-                self.pout(getattr(ex, 'message', repr(ex)))
-            else:
-                if response.status_code == 200:
-                    path = "{}/png/ana/{}.png".format(self.crud.get_application_prop("data_directory"), ptf["ptf_id"])
-                    response.raw.decode_content = True
-                    with open(path,'wb') as f:
-                        shutil.copyfileobj(response.raw, f)
-                else:
-                    self.crud.logger.error("%s %s %s", ptf["ptf_id"], response.status_code, url)
-                    self.pout(" err:{}".format(response.status_code))
+            url_analyse = ""
+            url_histo = ""
+            # graph technique
+            url = "https://www.boursier.com/actions/privileges/analyse-technique/{}-{},FR.html".format(ptf["ptf_name"].lower(), ptf["ptf_isin"])
+            content = self.get_content_form_url(url, header, cookies)
+            if content != "":
+                # recup du nom du gif
+                gif_names = re.search('.*/daybyday\/.*\/(.+?).gif.*', content)
+                # parfois il n'y a pas d'analyse du jour
+                if gif_names:
+                    gif_name = gif_names.group(1) 
+                    id_pa = re.search('(.+?)\..*', ptf["ptf_id"]).group(1) # on ne garde que le préfixe au "."
+                    url_analyse = "https://cdn-static.boursier.com/illustrations/feeds/daybyday/at/{}.gif".format(gif_name)
+                    # Maj ptf_url_analyse
+                    self.crud.exec_sql(self.crud.get_basename(), """
+                    update ptf set ptf_url_analyse = :url where ptf_id = :id
+                    """, {"id": ptf["ptf_id"], "url": url_analyse})
+            # grah histo
+            url_histo = "https://cdn-graph.boursier.com/Chart.aspx?p=nbcnormal&qt=candle&vt=line&pla1=2&pld1=1&s1={},FR&xx={}&d=974,680,0&gd=71&g=qv&rnd={}".format(ptf["ptf_isin"], str(start_date_histo)[:10], random.randrange(10000))
+
+            # Maj ptf_url_analyse ptf_url_histo
+            self.crud.exec_sql(self.crud.get_basename(), """
+            update ptf set ptf_url_analyse = :url_analyse, ptf_url_histo = :url_histo where ptf_id = :id
+            """, {"id": ptf["ptf_id"], "url_analyse": url_analyse, "url_histo": url_histo})
+
+            time.sleep(1) # wait 1 seconds
 
         self.pout("\n")
 
