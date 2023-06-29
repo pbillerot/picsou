@@ -29,7 +29,8 @@ CREATE TABLE "quotes" (
 	"close"	REAL,
 	"close1"	REAL,
 	"adjclose"	REAL,
-	"volume"	INTEGER
+	"volume"	INTEGER,
+	"candle"	TEXT DEFAULT ''
 );
 
 CREATE TABLE "orders" (

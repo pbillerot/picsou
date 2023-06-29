@@ -1,6 +1,7 @@
 {
     "version": "0.2.0",
     "configurations": [
+
         {
             "name": "Picsou",
             "type": "python",
@@ -23,6 +24,19 @@
             "cwd": "${workspaceRoot}",
             "args": [
                 "-note"
+            ],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },
+        {
+            "name": "Chandeliers",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "picsou.py",
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "-chandeliers"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"

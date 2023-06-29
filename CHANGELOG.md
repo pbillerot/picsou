@@ -6,6 +6,10 @@ Historique des modifications
 - vérifier rotation de beenux.log
 - vérifier rotation des logs de docker
 
+2.0.1 du 29 juin 2023
+----------------------
+- `added` analyse des chandeliers
+
 1.3.1 du 8 février 2023
 ----------------------
 - `added` image analyse issue de boursier.com
