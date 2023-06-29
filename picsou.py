@@ -483,15 +483,17 @@ class Picsou():
                     and ope_0 < ope_1 and ope_0 > clo_1 and clo_0 < clo_1:
                     candle = "les_3_corbeaux_rouges"
                     self.display("{} {} {}".format(name, date, candle))
-                # ligne de poussée haussière
-                if clo_1 > ope_1 and clo_0 < ope_0 and ope_0 > clo_1 \
-                    and clo_0 < clo_1 and clo_0 > ope_1 + (clo_1 - ope_1)/2:
-                    candle = "ligne_de_poussee_baissiere"
+                # poussée haussière
+                if clo_1 > ope_1 and clo_0 < ope_0 \
+                    and clo_0 > ope_1 + (clo_1 - ope_1)/2 \
+                    and ope_0 > clo_1 + (clo_1 - ope_1)/2:
+                    candle = "poussee_baissiere"
                     self.display("{} {} {}".format(name, date, candle))
-                # ligne de poussée baissière
-                if clo_1 < ope_1 and clo_0 > ope_0 and ope_0 < clo_1 \
-                    and clo_0 < ope_1 - (ope_1 - clo_1)/2:
-                    candle = "ligne_de_poussee_haussiere"
+                # poussée baissière
+                if clo_1 < ope_1 and clo_0 > ope_0 \
+                    and clo_0 > ope_1 + (clo_1 - ope_1)/2 \
+                    and ope_0 > clo_1 + (clo_1 - ope_1)/2:
+                    candle = "poussee_haussiere"
                     self.display("{} {} {}".format(name, date, candle))
                 # pénétrante haussière
                 if clo_1 < ope_1 and clo_0 > ope_0 \
