@@ -376,142 +376,145 @@ class Picsou():
         ope_0 = 0
         ope_1 = 0
         ope_2 = 0
-        ope_3 = 0
         max_0 = 0
         max_1 = 0
         max_2 = 0
-        max_3 = 0
         min_0 = 0
         min_1 = 0
         min_2 = 0
-        min_3 = 0
         clo_0 = 0
         clo_1 = 0
         clo_2 = 0
-        clo_3 = 0
+        candle_0 = ""
+        candle_1 = ""
+        candle_2 = ""
         if len(quotes) > 0:
-            name = ""
+            id = ""
             for quote in quotes:
                 # rotation
-                if name == "" or name != quote["name"]:
+                if id == "" or id != quote["id"]:
+                    if id != "":
+                        # maj ptf.ptf_candlex
+                        self.crud.exec_sql(self.crud.get_basename(), """
+                        update ptf set ptf_candle0 = :candle0, ptf_candle1 = :candle1, ptf_candle2 = :candle2
+                        where ptf_id = :id 
+                        """, {"id": id, "candle0": candle_0, "candle1": candle_1, "candle2": candle_2})
                     ope_0 = 0
                     ope_1 = 0
                     ope_2 = 0 
-                    ope_3 = 0       
                     min_0 = 0
                     min_1 = 0
                     min_2 = 0
-                    min_3 = 0       
                     max_0 = 0
                     max_1 = 0
                     max_2 = 0
-                    max_3 = 0       
                     clo_0 = 0
                     clo_1 = 0
                     clo_2 = 0
-                    clo_3 = 0
-                    name = quote["name"]
-                ope_3 = ope_2
+                    candle_0 = ""
+                    candle_1 = ""
+                    candle_2 = ""
+                    id = quote["id"]
+                # rotation
                 ope_2 = ope_1
                 ope_1 = ope_0
-                max_3 = max_2
                 max_2 = max_1
                 max_1 = max_0
-                min_3 = min_2
                 min_2 = min_1
                 min_1 = min_0
-                clo_3 = clo_2
                 clo_2 = clo_1
                 clo_1 = clo_0
-                # load
+                candle_2 = candle_1
+                candle_1 = candle_0
+                # initialisation
                 ope_0 = quote["open"]
                 max_0 = quote["high"]
                 min_0 = quote["low"]
                 clo_0 = quote["close"]
                 id = quote["id"]
                 date = quote["date"]
+                candle_0 = ""
                 # self.pout("{} {} {} {} {} ...".format(name, ope_0, max_0, min_0, clo_0))
-                if ope_3 == 0:
+                if ope_2 == 0:
                     continue
                 # Traitement des chandeliers
-                candle = ""
                 # étoîle du soir
                 if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 and ope_1 > clo_2 and ope_1 > ope_0 \
                     and (ope_1-clo_1)/(max_1-min_1) > 0.05:
-                    candle = "etoile_du_soir"
-                    self.display("{} {} {}".format(name, date, candle))
+                    candle_0 = "etoile_du_soir"
+                    self.display("{} {} {}".format(id, date, candle_0))
                 # étoîle du matin
                 if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 > ope_0 and clo_1 > ope_2 and ope_1 < clo_0 \
                     and (ope_1-clo_1)/(max_1-min_1) > 0.05:
-                    candle = "etoile_du_matin"
-                    self.display("{} {} {}".format(name, date, candle))
+                    candle_0 = "etoile_du_matin"
+                    self.display("{} {} {}".format(id, date, candle_0))
                 # bébé abandonné haussier
                 if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 and ope_1 > clo_2 and ope_1 > ope_0 \
                     and (ope_1-clo_1)/(max_1-min_1) < 0.05:
-                    candle = "bebe_abandonne_baissier"
-                    self.display("{} {} {}".format(name, date, candle))
+                    candle_0 = "bebe_abandonne_baissier"
+                    self.display("{} {} {}".format(id, date, candle_0))
                 # bébé abandonné baissier
                 if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 > ope_0 and clo_1 > ope_2 and ope_1 < clo_0 \
                     and (ope_1-clo_1)/(max_1-min_1) < 0.05:
-                    candle = "bebe_abandonne_haussier"
-                    self.display("{} {} {}".format(name, date, candle))
+                    candle_0 = "bebe_abandonne_haussier"
+                    self.display("{} {} {}".format(id, date, candle_0))
                 # avalement haussier
                 if clo_1 < ope_1 and clo_0 > ope_0 and ope_0 < clo_1 and clo_0 > ope_1:
-                    candle = "avalement_haussier"
-                    self.display("{} {} {}".format(name, date, candle))
+                    candle_0 = "avalement_haussier"
+                    self.display("{} {} {}".format(id, date, candle_0))
                 # avalement baissier
                 if clo_1 > ope_1 and clo_0 < ope_0 and clo_0 < ope_1 and ope_0 > clo_1:
-                    candle = "avalement_baissier"
-                    self.display("{} {} {}".format(name, date, candle))
+                    candle_0 = "avalement_baissier"
+                    self.display("{} {} {}".format(id, date, candle_0))
                 # harami haussier
                 if clo_1 < ope_1 and clo_0 > ope_0 and clo_0 < ope_1 and ope_0 > clo_1:
-                    candle = "harami_haussier"
-                    self.display("{} {} {}".format(name, date, candle))
+                    candle_0 = "harami_haussier"
+                    self.display("{} {} {}".format(id, date, candle_0))
                 # harami baissier
                 if clo_1 > ope_1 and clo_0 < ope_0 and ope_0 > clo_1 and clo_0 < ope_1:
-                    candle = "harami_baissier"
-                    self.display("{} {} {}".format(name, date, candle))
+                    candle_0 = "harami_baissier"
+                    self.display("{} {} {}".format(id, date, candle_0))
                 # les 3 soldats bleus
                 if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 > ope_1 \
                     and ope_1 < clo_2 and ope_1 > ope_2 and clo_1 > clo_2 \
                     and ope_0 < clo_1 and ope_0 > ope_1 and clo_0 > clo_1:
-                    candle = "les_3_soldats_bleus"
-                    self.display("{} {} {}".format(name, date, candle))
+                    candle_0 = "les_3_soldats_bleus"
+                    self.display("{} {} {}".format(id, date, candle_0))
                 # les 3 corbeaux rouges
                 if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 < ope_1 \
                     and ope_1 < ope_2 and ope_1 > clo_2 and clo_1 < clo_2 \
                     and ope_0 < ope_1 and ope_0 > clo_1 and clo_0 < clo_1:
-                    candle = "les_3_corbeaux_rouges"
-                    self.display("{} {} {}".format(name, date, candle))
+                    candle_0 = "les_3_corbeaux_rouges"
+                    self.display("{} {} {}".format(id, date, candle_0))
                 # poussée haussière
                 if clo_1 > ope_1 and clo_0 < ope_0 \
                     and clo_0 > ope_1 + (clo_1 - ope_1)/2 \
                     and ope_0 > clo_1 + (clo_1 - ope_1)/2:
-                    candle = "poussee_baissiere"
-                    self.display("{} {} {}".format(name, date, candle))
+                    candle_0 = "poussee_baissiere"
+                    self.display("{} {} {}".format(id, date, candle_0))
                 # poussée baissière
                 if clo_1 < ope_1 and clo_0 > ope_0 \
                     and clo_0 > ope_1 + (clo_1 - ope_1)/2 \
                     and ope_0 > clo_1 + (clo_1 - ope_1)/2:
-                    candle = "poussee_haussiere"
-                    self.display("{} {} {}".format(name, date, candle))
+                    candle_0 = "poussee_haussiere"
+                    self.display("{} {} {}".format(id, date, candle_0))
                 # pénétrante haussière
                 if clo_1 < ope_1 and clo_0 > ope_0 \
                     and (clo_0 - ope_0) > (ope_1 - clo_1) \
                     and clo_0 > clo_1 + (ope_1 - clo_1)/2 :
-                    candle = "penetrante_haussiere"
-                    self.display("{} {} {}".format(name, date, candle))
+                    candle_0 = "penetrante_haussiere"
+                    self.display("{} {} {}".format(id, date, candle_0))
                 # pénétrante baissière
                 if clo_1 > ope_1 and clo_0 < ope_0 \
                     and (ope_0 - clo_0) > (clo_1 - ope_1) \
                     and clo_0 < ope_1 + (clo_1 - ope_1)/2 :
-                    candle = "penetrante_baissiere"
-                    self.display("{} {} {}".format(name, date, candle))
+                    candle_0 = "penetrante_baissiere"
+                    self.display("{} {} {}".format(id, date, candle_0))
 
                 # maj systématique de candle
                 self.crud.exec_sql(self.crud.get_basename(), """
                     update quotes set candle = :candle where id = :id and date = :date
-                    """, {"id": id, "date": date, "candle": candle})
+                    """, {"id": id, "date": date, "candle": candle_0})
 
 
     def graphQuotes(self):
@@ -529,7 +532,7 @@ class Picsou():
         ptfs = self.crud.sql_to_dict(self.crud.get_basename(), """
         SELECT ptf.*, orders.orders_order, orders.orders_cost_price, orders.orders_time,
         orders.orders_sell_time 
-        FROM ptf LEFT OUTER JOIN orders ON orders_ptf_id = ptf_id and ptf_enabled = 1 ORDER BY ptf_id
+        FROM ptf LEFT OUTER JOIN orders ON orders_ptf_id = ptf_id WHERE ptf_enabled = 1 ORDER BY ptf_id
         """, {})
         tops = {}
         rems = {}
@@ -593,7 +596,7 @@ class Picsou():
                    id_current = quote["id"]
                    qclose1 = quote["open"]
                    ptf_name = quote["ptf_name"]
-                #    self.pout("graphQuotes... " + quote["id"])
+                # self.pout("graphQuotes... " + quote["id"])
                 # un graphe par ptf
                 if id_current == quote["id"] :
                     # chargement des données
