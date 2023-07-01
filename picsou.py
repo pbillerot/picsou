@@ -400,9 +400,9 @@ class Picsou():
                     if id != "":
                         # maj ptf.ptf_candlex
                         self.crud.exec_sql(self.crud.get_basename(), """
-                        update ptf set ptf_candle0 = :candle0, ptf_candle1 = :candle1, ptf_candle2 = :candle2
+                        update ptf set ptf_candle0 = :candle0, ptf_candle1 = :candle1, ptf_candle2 = :candle2, ptf_rsi = :rsi
                         where ptf_id = :id 
-                        """, {"id": id, "candle0": candle_0, "candle1": candle_1, "candle2": candle_2})
+                        """, {"id": id, "candle0": candle_0, "candle1": candle_1, "candle2": candle_2, "rsi": rsi})
                     ope_0 = 0
                     ope_1 = 0
                     ope_2 = 0 
@@ -421,6 +421,7 @@ class Picsou():
                     id = quote["id"]
                     dquotes.clear()
                     iquote = 0
+                    rsi = 0
                 # rotation
                 ope_2 = ope_1
                 ope_1 = ope_0
