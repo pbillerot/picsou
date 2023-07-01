@@ -8,7 +8,7 @@
    version="1.1"
    id="svg5"
    inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
-   sodipodi:docname="penetrante haussiere.svg"
+   sodipodi:docname="penetrante_haussiere.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -29,7 +29,7 @@
      inkscape:document-units="px"
      showgrid="true"
      inkscape:zoom="2.309375"
-     inkscape:cx="148.30853"
+     inkscape:cx="148.74154"
      inkscape:cy="136.18403"
      inkscape:window-width="1243"
      inkscape:window-height="990"
@@ -56,7 +56,7 @@
     <color-profile
        name="Ancor-Communications-Inc-26-"
        xlink:href="../../../.local/share/icc/edid-491734c94d8a1e12b83753a7c970504c.icc"
-       id="color-profile1043" />
+       id="color-profile288" />
   </defs>
   <g
      inkscape:label="Calque 1"
@@ -108,16 +108,16 @@
        y="29.102587" />
     <text
        xml:space="preserve"
-       style="font-size:7.00913px;fill:#000000;stroke-width:0.584094"
-       x="4.4793296"
-       y="74.646286"
+       style="font-size:6.77698px;fill:#000000;stroke-width:0.564748"
+       x="4.679121"
+       y="72.17392"
        id="text910"
-       transform="scale(1.0089301,0.99114894)"><tspan
+       transform="scale(0.97551326,1.0251014)"><tspan
          sodipodi:role="line"
          id="tspan908"
-         style="stroke-width:0.584094"
-         x="4.4793296"
-         y="74.646286">Pénérante haussière</tspan></text>
+         style="stroke-width:0.564748"
+         x="4.679121"
+         y="72.17392">Pénétrante haussière</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:2.11667px;fill:#000000;stroke-width:0.264583"

@@ -8,7 +8,7 @@
    version="1.1"
    id="svg5"
    inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
-   sodipodi:docname="poussee baissiere.svg"
+   sodipodi:docname="poussee_baissiere.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -29,7 +29,7 @@
      inkscape:document-units="px"
      showgrid="true"
      inkscape:zoom="2.309375"
-     inkscape:cx="183.81597"
+     inkscape:cx="184.24899"
      inkscape:cy="136.18403"
      inkscape:window-width="1243"
      inkscape:window-height="990"
@@ -48,7 +48,7 @@
     <color-profile
        name="Ancor-Communications-Inc-26-"
        xlink:href="../../../.local/share/icc/edid-491734c94d8a1e12b83753a7c970504c.icc"
-       id="color-profile384" />
+       id="color-profile232" />
   </defs>
   <g
      inkscape:label="Calque 1"
@@ -105,7 +105,7 @@
          id="tspan908"
          style="stroke-width:0.505762"
          x="2.1292403"
-         y="64.380424">Ligne de poussée haussière</tspan></text>
+         y="64.380424">Ligne de poussée baissière</tspan></text>
     <rect
        style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.264783;stroke-dasharray:none;stroke-opacity:1"
        id="rect167-3-6"

@@ -18,6 +18,7 @@ import requests
 import random
 import sqlite3
 import matplotlib.pyplot as plt
+import numpy as np
 from crud import Crud
 
 class Picsou():
@@ -368,7 +369,7 @@ class Picsou():
 
     def chandeliers(self):
         """ 
-        Calcul des chandeliers 
+        Calcul des chandeliers et RSI
         """
         quotes = self.crud.sql_to_dict(self.crud.get_basename(), """
         SELECT * FROM quotes order by name ,date asc
@@ -388,6 +389,9 @@ class Picsou():
         candle_0 = ""
         candle_1 = ""
         candle_2 = ""
+        dquotes = []
+        iquote = 0
+        rsi = 0
         if len(quotes) > 0:
             id = ""
             for quote in quotes:
@@ -415,6 +419,8 @@ class Picsou():
                     candle_1 = ""
                     candle_2 = ""
                     id = quote["id"]
+                    dquotes.clear()
+                    iquote = 0
                 # rotation
                 ope_2 = ope_1
                 ope_1 = ope_0
@@ -433,10 +439,15 @@ class Picsou():
                 clo_0 = quote["close"]
                 id = quote["id"]
                 date = quote["date"]
+                dquotes.append(quote["close"])
                 candle_0 = ""
                 # self.pout("{} {} {} {} {} ...".format(name, ope_0, max_0, min_0, clo_0))
                 if ope_2 == 0:
                     continue
+                # RSI
+                iquote += 1
+                if iquote >= 14:
+                    rsi = self.compute_rsi(dquotes)
                 # Traitement des chandeliers
                 # étoîle du soir
                 if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 and ope_1 > clo_2 and ope_1 > ope_0 \
@@ -512,9 +523,10 @@ class Picsou():
                     self.display("{} {} {}".format(id, date, candle_0))
 
                 # maj systématique de candle
+                self.display("{} {} rsi:{}".format(id, date, rsi))
                 self.crud.exec_sql(self.crud.get_basename(), """
-                    update quotes set candle = :candle where id = :id and date = :date
-                    """, {"id": id, "date": date, "candle": candle_0})
+                    update quotes set candle = :candle, rsi = :rsi where id = :id and date = :date
+                    """, {"id": id, "date": date, "candle": candle_0, "rsi": rsi})
 
 
     def graphQuotes(self):
@@ -780,6 +792,30 @@ class Picsou():
             if len(dquotes) > 0 : 
                 draw()
             self.pout("\n")
+
+    def compute_rsi(self, data, n=14):
+        deltas = np.diff(data)
+        seed = deltas[:n+1]
+        up = seed[seed>=0].sum()/n
+        down = -seed[seed<0].sum()/n
+        rs = up/down
+        rsi = np.zeros_like(data)
+        rsi[:n] = 100. - 100./(1.+rs)
+
+        for i in range(n, len(data)):
+            delta = deltas[i-1]
+            if delta > 0:
+                upval = delta
+                downval = 0.
+            else:
+                upval = 0.
+                downval = -delta
+
+            up = (up*(n-1) + upval)/n
+            down = (down*(n-1) + downval)/n
+            rs = up/down
+            rsi[i] = 100. - 100./(1.+rs)
+        return rsi[len(rsi)-1]
 
 if __name__ == '__main__':
 
