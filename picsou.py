@@ -1,7 +1,9 @@
 #./venv/bin/python3
 # -*- coding:Utf-8 -*-
 """
-    Batch de mise à jour des données de la base
+    Batch de mise à jour des données de la base picsou
+    https://matplotlib.org/stable/gallery/statistics/boxplot_color.html#sphx-glr-gallery-statistics-boxplot-color-py
+    https://matplotlib.org/stable/plot_types/stats/boxplot_plot.html#sphx-glr-plot-types-stats-boxplot-plot-py
 """
 import shutil
 import os
@@ -531,7 +533,9 @@ class Picsou():
 
 
     def graphQuotes(self):
-        """ """
+        """ 
+        Création du graphique des cotations avec candle, valeur, volume et rsi
+        """
 
         def mini_date(sdate):
             return sdate[8:10] + "-" + sdate[5:7]
@@ -545,7 +549,9 @@ class Picsou():
         ptfs = self.crud.sql_to_dict(self.crud.get_basename(), """
         SELECT ptf.*, orders.orders_order, orders.orders_cost_price, orders.orders_time,
         orders.orders_sell_time 
-        FROM ptf LEFT OUTER JOIN orders ON orders_ptf_id = ptf_id WHERE ptf_enabled = 1 ORDER BY ptf_id
+        FROM ptf LEFT OUTER JOIN orders ON orders_ptf_id = ptf_id WHERE ptf_enabled = 1 
+        LIMIT 1
+        ORDER BY ptf_id
         """, {})
         tops = {}
         rems = {}
@@ -592,16 +598,18 @@ class Picsou():
         doptimum = []
         dseuil = []
         ddate = []
-        dzero = []
-        dpercent= []
+        dopen = []
+        dclose = []
+        dlow = []
+        dhigh = []
         dhig_p= []
         dhig_n= []
         dlow_p= []
         dlow_n= []
         dvol = []
+        drsi = []
         labelx = []
         ptf_name = ""
-        qclose1 = 0
         if len(quotes) > 0:
             iquote = 0
             for quote in quotes:
@@ -628,79 +636,18 @@ class Picsou():
                     dseuil.append(seuil[id_current])
                     ddate.append(mini_date(quote["date"]) + " open")
                     labelx.append(mini_date(quote["date"]))
-                    dzero.append(0)
-                    percent = ((quote["open"]-qclose1) / qclose1)*100
-                    dpercent.append( percent )
 
                     high = quote["high"] if quote["high"] > quote["open"] else quote["open"]
-                    dhig = ((high-qclose1) / qclose1)*100
-                    if dhig > 0 :
-                        dhig_p.append( dhig )
-                        dhig_n.append( 0 )
-                    else :
-                        dhig_p.append( 0 )
-                        dhig_n.append( dhig )
+                    dhigh.append(high)
                     low = quote["low"] if quote["low"] < quote["open"] else quote["open"]
-                    dlow = ((low-qclose1) / qclose1)*100
-                    if dlow > 0 :
-                        dlow_p.append( dlow )
-                        dlow_n.append( 0 )
-                    else :
-                        dlow_p.append( 0 )
-                        dlow_n.append( dlow )
-
-                    # Le soir
-                    iquote += 1
-                    dvol.append(quote["volume"])
-                    dquotes.append(quote["close"])
-                    if orders[id_current] == "buy" and quote["date"] >= achat[id_current] : 
-                        dachat.append(quote["close"])
-                    elif orders[id_current] == "sell" and quote["date"] >= achat[id_current] and quote["date"] <= vente[id_current]: 
-                        dachat.append(quote["close"])
-                    else:
-                        dachat.append(None)
-
-                    dcost.append(cost[id_current])
-                    doptimum.append(optimum[id_current])
-                    dseuil.append(seuil[id_current])
-                    ddate.append(mini_date(quote["date"]) + " close")
-                    labelx.append("")
-                    dzero.append(0)
-                    percent = ((quote["close"]-qclose1) / qclose1)*100
-                    dpercent.append( percent )
-
-                    high = quote["high"] if quote["high"] > quote["open"] else quote["open"]
-                    dhig = ((high-qclose1) / qclose1)*100
-                    if dhig > 0 :
-                        dhig_p.append( dhig )
-                        dhig_n.append( 0 )
-                    else :
-                        dhig_p.append( 0 )
-                        dhig_n.append( dhig )
-
-                    low = quote["low"] if quote["low"] < quote["open"] else quote["open"]
-                    dlow = ((low-qclose1) / qclose1)*100
-                    if dlow > 0 :
-                        dlow_p.append( dlow )
-                        dlow_n.append( 0 )
-                    else :
-                        dlow_p.append( 0 )
-                        dlow_n.append( dlow )
-
-                    qclose1 = quote["close"]
-                    # self.pout(" {}:{}".format(id_current, quote["date"]))
+                    dlow.append(high)
+                    drsi.append(quote["rsi"])
                 else:
                     # Dessin du graphe
                     def draw():
                         """ matplotlib. colors
-                        b : blue.
-                        g : green.
-                        r : red.
-                        c : cyan.
-                        m : magenta.
-                        y : yellow.
-                        k : black.
-                        w : white. """
+                        b: blue g: green r: red c: cyan m: magenta y: yellow k: black w: white
+                        """
                         fig, ax1 = plt.subplots()
                         fig.set_figwidth(12)
                         fig.set_figheight(6)
@@ -719,16 +666,9 @@ class Picsou():
                         ax1.legend(loc="lower left")
 
                         ax2 = ax1.twinx()
-                        # ax2.plot(ddate, dzero, 'k:', linewidth=2)
-                        ax2.plot(ddate, dpercent, 'bo:', alpha=0.6, label="Pourcentage")
-                        ax2.bar(ddate, dhig_p, color='b', alpha=0.2, label="Max.")
-                        ax2.bar(ddate, dhig_n, color='r', alpha=0.2, label="Min.")
-                        ax2.bar(ddate, dlow_p, color='b', alpha=0.2)
-                        ax2.bar(ddate, dlow_n, color='r', alpha=0.2)
-                        ax2.set_ylabel('Cotation en %', fontsize=9)
+                        ax2.plot(ddate, drsi, 'yo-', label='RSI')
+                        ax2.set_ylabel('RSI', fontsize=9)
                         ax2.tick_params(axis="y", labelsize=8)
-                        # ax2.yaxis.set_ticklabels(dpercent , minor=True)
-                        # plt.gca().yaxis.set_ticks(dpercent, minor = True) 
                         ax2.legend(loc="lower right")
                         ax2.grid()
 
@@ -764,9 +704,9 @@ class Picsou():
                         plt.savefig(path)
                         plt.close()
                         # Maj de note, seuil_vente dans ptf
-                        self.crud.exec_sql(self.crud.get_basename(), """
-                        update ptf set ptf_note = :note where ptf_id = :id
-                        """, {"id": id_current, "note": comment, "seuil_vente": optimum[id_current]})
+                        # self.crud.exec_sql(self.crud.get_basename(), """
+                        # update ptf set ptf_note = :note where ptf_id = :id
+                        # """, {"id": id_current, "note": comment, "seuil_vente": optimum[id_current]})
 
                     draw()
 
@@ -778,16 +718,12 @@ class Picsou():
                     dseuil.clear()
                     dcost.clear()
                     ddate.clear()
-                    dpercent.clear()
-                    dhig_p.clear()
-                    dhig_n.clear()
-                    dlow_p.clear()
-                    dlow_n.clear()
-                    dzero.clear()
+                    dhigh.clear()
+                    dlowh.clear()
                     dvol.clear()
+                    drsi.clear()
                     labelx.clear()
                     id_current = quote["id"]
-                    qclose1 = quote["open"]
                     ptf_name = quote["ptf_name"]
                     iquote = 0
             if len(dquotes) > 0 : 

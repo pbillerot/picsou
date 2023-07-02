@@ -1,4 +1,4 @@
-<diagram program="umletino" version="14.4.0-SNAPSHOT"><zoom_level>10</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLPackage</id><coordinates><x>40</x><y>10</y><w>300</w><h>280</h></coordinates><panel_attributes>PTF
+<diagram program="umletino" version="15.0.0"><zoom_level>10</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLPackage</id><coordinates><x>40</x><y>10</y><w>300</w><h>350</h></coordinates><panel_attributes>PTF
 halign=left
 valign=top
 bg=blue
@@ -16,9 +16,15 @@ CREATE TABLE "ptf" (
 	"ptf_isin"	TEXT DEFAULT 0,
 	"ptf_rem"	TEXT DEFAULT '',
 	"ptf_trend"	TEXT DEFAULT '',
+	"ptf_url_analyse"	TEXT,
+	"ptf_url_histo"	TEXT,
+	"ptf_candle0"	TEXT DEFAULT '',
+	"ptf_candle1"	TEXT DEFAULT '',
+	"ptf_candle2"	TEXT DEFAULT '',
+	"ptf_rsi"	INTEGER DEFAULT 0,
 	PRIMARY KEY("ptf_id")
 );
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>40</x><y>320</y><w>300</w><h>390</h></coordinates><panel_attributes>ORDERS
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>30</x><y>420</y><w>300</w><h>390</h></coordinates><panel_attributes>ORDERS
 halign=left
 valign=top
 bg=blue
@@ -46,7 +52,7 @@ CREATE TABLE "orders" (
 	"orders_rem"	TEXT DEFAULT '',
 	PRIMARY KEY("orders_id" AUTOINCREMENT)
 );
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>410</x><y>350</y><w>230</w><h>220</h></coordinates><panel_attributes>QUOTES
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>410</x><y>350</y><w>230</w><h>250</h></coordinates><panel_attributes>QUOTES
 halign=left
 valign=top
 bg=blue
@@ -61,7 +67,9 @@ CREATE TABLE "quotes" (
 	"close"	REAL,
 	"close1"	REAL,
 	"adjclose"	REAL,
-	"volume"	INTEGER
+	"volume"	INTEGER,
+	"candle"	TEXT DEFAULT '',
+	"rsi"	INTEGER DEFAULT 0
 );
 
 </panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLNote</id><coordinates><x>460</x><y>100</y><w>260</w><h>200</h></coordinates><panel_attributes>Quotes
@@ -77,7 +85,6 @@ csv_to_quotes
 - update PTF avec la quote du jour
 - update PTF avec le % du jour
 -..
-calcul % de CDAYS
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLNote</id><coordinates><x>600</x><y>10</y><w>230</w><h>70</h></coordinates><panel_attributes>Note..
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLNote</id><coordinates><x>560</x><y>10</y><w>230</w><h>70</h></coordinates><panel_attributes>Note..
 bg=red
 la table CDAYS n'est plus nécessaire</panel_attributes><additional_attributes></additional_attributes></element></diagram>

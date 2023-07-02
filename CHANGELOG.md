@@ -6,6 +6,10 @@ Historique des modifications
 - vérifier rotation de beenux.log
 - vérifier rotation des logs de docker
 
+3.0.1 du 2 juillet 2023
+----------------------
+- `added` début graphique avec candle
+
 3.0.0 du 1er juillet 2023
 ----------------------
 - `added` rsi dans table quotes
