@@ -8,7 +8,7 @@ Historique des modifications
 
 3.1.0 du 3 juillet 2023
 ----------------------
-- `addged` graph quotes avec candle et rsi
+- `added` graph quotes avec candle et rsi
 
 3.0.2 du 3 juillet 2023
 ----------------------

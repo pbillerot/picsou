@@ -61,6 +61,11 @@ class Picsou():
             self.quotes()
             self.chandeliers()
 
+        if self.args.quotesgraph:
+            self.quotes()
+            self.chandeliers()
+            self.graphQuotes()
+
         self.display("Picsou en relache")
 
     def get_crumbs_and_cookies(self, stock):
@@ -375,7 +380,7 @@ class Picsou():
         """
         self.pout("Candles of")
         quotes = self.crud.sql_to_dict(self.crud.get_basename(), """
-        SELECT * FROM quotes order by name ,date asc
+        SELECT * FROM quotes join ptf on ptf_id = id and ptf_enabled = 1 order by name ,date asc
         """, {})
         ope_0 = 0
         ope_1 = 0
@@ -795,6 +800,7 @@ if __name__ == '__main__':
     parser.add_argument('-analyse', action='store_true', default=False, help="Récupération des graphiques d'analyse")
     parser.add_argument('-chandeliers', action='store_true', default=False, help="Analyse des chandeliers")
     parser.add_argument('-quotescandle', action='store_true', default=False, help="Récup quotes puis Analyse des chandeliers")
+    parser.add_argument('-quotesgraph', action='store_true', default=False, help="Enchainement quotes chnadeliers graph")
     # print parser.parse_args()
     if parser._get_args() == 0:
         parser.print_help()
