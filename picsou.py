@@ -550,185 +550,140 @@ class Picsou():
         SELECT ptf.*, orders.orders_order, orders.orders_cost_price, orders.orders_time,
         orders.orders_sell_time 
         FROM ptf LEFT OUTER JOIN orders ON orders_ptf_id = ptf_id WHERE ptf_enabled = 1 
-        LIMIT 1
+        and ptf_id = 'STMPA.PA'
         ORDER BY ptf_id
         """, {})
-        tops = {}
-        rems = {}
         orders = {}
         optimum = {}
-        cost = {}
-        achat = {}
-        vente = {}
         seuil = {}
+        border = False
+        btop = False
+        order_date = ""
         for ptf in ptfs:
-            tops[ptf["ptf_id"]] = ptf["ptf_top"]
-            rems[ptf["ptf_id"]] = ptf["ptf_rem"]
-            if ptf["orders_order"] is not None:
-                orders[ptf["ptf_id"]] = ptf["orders_order"]
+            self.pout(" " + ptf["ptf_id"] + "")
+
+            if ptf["ptf_top"] == "1":
+                btop = True
             else:
-                orders[ptf["ptf_id"]] = ""
-            if ptf["orders_time"] is not None:
-                achat[ptf["ptf_id"]] = ptf["orders_time"][:10]
+                btop = False
+            if ptf["orders_order"] is not None and ptf["orders_order"] == "buy":
+                border = True
             else:
-                achat[ptf["ptf_id"]] = "2100:12:31"
-            if ptf["orders_sell_time"] is not None:
-                vente[ptf["ptf_id"]] = ptf["orders_sell_time"][:10]
-            else:
-                vente[ptf["ptf_id"]] = "2000:12:31"
+                border = False
             if ptf["orders_cost_price"] is not None:
                 optimum[ptf["ptf_id"]] = ptf["orders_cost_price"] + ptf["orders_cost_price"] * seuil_vente
-                cost[ptf["ptf_id"]] = ptf["orders_cost_price"]
+                seuil[ptf["ptf_id"]] = ptf["orders_cost_price"]
             else:
                 optimum[ptf["ptf_id"]] = 0
-                cost[ptf["ptf_id"]] = 0
-            if ptf["ptf_seuil_achat"] is not None:
-                seuil[ptf["ptf_id"]] = ptf["ptf_seuil_achat"]
-            else:
                 seuil[ptf["ptf_id"]] = 0
                 
-        quotes = self.crud.sql_to_dict(self.crud.get_basename(), """
-        SELECT quotes.*, ptf_name FROM quotes left outer join ptf on ptf_id = id order by id ,date
-        """, {})
+            quotes = self.crud.sql_to_dict(self.crud.get_basename(), """
+            SELECT * FROM quotes where id = :id order by id ,date
+            """, {"id": ptf["ptf_id"]})
 
-        id_current = ""
-        dquotes = []
-        dachat = []
-        dcost = []
-        doptimum = []
-        dseuil = []
-        ddate = []
-        dopen = []
-        dclose = []
-        dlow = []
-        dhigh = []
-        dhig_p= []
-        dhig_n= []
-        dlow_p= []
-        dlow_n= []
-        dvol = []
-        drsi = []
-        labelx = []
-        ptf_name = ""
-        if len(quotes) > 0:
-            iquote = 0
+            dquotes = []
+            doptimum = []
+            dseuil = []
+            ddate = []
+            dopen = []
+            dclose = []
+            dlow = []
+            dhigh = []
+            dvol = []
+            drsi = []
+            labelx = []
             for quote in quotes:
-                if id_current == "" : # la 1ère fois
-                   id_current = quote["id"]
-                   qclose1 = quote["open"]
-                   ptf_name = quote["ptf_name"]
-                # self.pout("graphQuotes... " + quote["id"])
-                # un graphe par ptf
-                if id_current == quote["id"] :
-                    # chargement des données
-                    # le matin
-                    iquote += 1
-                    dvol.append(quote["volume"])
-                    dquotes.append(quote["open"])
-                    if orders[id_current] == "buy" and quote["date"] >= achat[id_current] : 
-                        dachat.append(quote["open"])
-                    elif orders[id_current] == "sell" and quote["date"] >= achat[id_current] and quote["date"] <= vente[id_current]: 
-                        dachat.append(quote["open"])
-                    else:
-                        dachat.append(None)
-                    dcost.append(cost[id_current])
-                    doptimum.append(optimum[id_current])
-                    dseuil.append(seuil[id_current])
-                    ddate.append(mini_date(quote["date"]) + " open")
-                    labelx.append(mini_date(quote["date"]))
+                # chargement des données
+                dvol.append(quote["volume"])
+                dquotes.append(quote["open"])
 
-                    high = quote["high"] if quote["high"] > quote["open"] else quote["open"]
-                    dhigh.append(high)
-                    low = quote["low"] if quote["low"] < quote["open"] else quote["open"]
-                    dlow.append(high)
+                if border:
+                    doptimum.append(optimum[quote["id"]])
+                    dseuil.append(seuil[quote["id"]])
+                else:
+                    doptimum.append(None)
+                    dseuil.append(None)
+                ddate.append(mini_date(quote["date"]) + " open")
+                labelx.append(mini_date(quote["date"]))
+
+                high = quote["high"] if quote["high"] > quote["open"] else quote["open"]
+                dhigh.append(high)
+                low = quote["low"] if quote["low"] < quote["open"] else quote["open"]
+                dlow.append(high)
+                if quote["rsi"] != 0:
                     drsi.append(quote["rsi"])
                 else:
-                    # Dessin du graphe
-                    def draw():
-                        """ matplotlib. colors
-                        b: blue g: green r: red c: cyan m: magenta y: yellow k: black w: white
-                        """
-                        fig, ax1 = plt.subplots()
-                        fig.set_figwidth(12)
-                        fig.set_figheight(6)
+                    drsi.append(None)
 
-                        ax1.plot(ddate, dquotes, 'mo-', label='Cotation')
-                        ax1.plot(ddate, dachat, 'go-', label='Achat', linewidth=2)
-                        if orders[id_current] == "buy" :
-                            ax1.plot(ddate, dcost, 'g:', label='Seuil rentabilité', linewidth=2)
-                            ax1.plot(ddate, doptimum, 'g-', label="Seuil vente {} %".format(seuil_vente*100), linewidth=2)
-                        else:
-                            if seuil[id_current] != 0:
-                                ax1.plot(ddate, dseuil, 'b-', label="Seuil achat {} %".format(seuil_achat*100), linewidth=2)
-                        ax1.set_ylabel('Cotation en €', fontsize=9)
-                        ax1.tick_params(axis="x", labelsize=8)
-                        ax1.tick_params(axis="y", labelsize=8)
-                        ax1.legend(loc="lower left")
-
-                        ax2 = ax1.twinx()
-                        ax2.plot(ddate, drsi, 'yo-', label='RSI')
-                        ax2.set_ylabel('RSI', fontsize=9)
-                        ax2.tick_params(axis="y", labelsize=8)
-                        ax2.legend(loc="lower right")
-                        ax2.grid()
-
-                        ax3 = ax1.twinx()
-                        ax3.bar(ddate, dvol, color='k', alpha=0.1, width=0.4, label="Volume")
-                        ax3.get_yaxis().set_visible(False)
-                        ax3.legend(loc="lower center")
-
-                        fig.autofmt_xdate()
-                        plt.subplots_adjust(left=0.06, bottom=0.1, right=0.93, top=0.90, wspace=None, hspace=None)
-
-                        # fig.canvas.draw_idle()
-                        plt.xticks(ddate, labelx)
-                        # plt.show()
-                        # Création du PNG
-                        self.pout(" " + id_current + "")
-                        # Recherche du fichier qui peut être classé dans un sous répertoire
-                        pattern_path = r"\/png\/(.*?){}\.png".format(id_current)
-                        comment = ""
-                        files = glob.glob(self.crud.get_application_prop("data_directory") + "/png/quotes/**/{}.png".format(id_current), recursive=True)
-                        if len(files) == 0:
-                            path = "{}/png/quotes/{}.png".format(self.crud.get_application_prop("data_directory"), id_current)
-                        else:
-                            path = files[0]
-                            srep1 = re.search(pattern_path, path).group(1)
-                            comment = srep1.replace("quotes", "").replace("/", "")
-
-                        if tops[id_current] == 1 : comment += " TOP"
-                        if orders[id_current] == "buy" : comment += " ACHAT"
-                        plt.suptitle("Cours de {} - {} - {:3.2f} €".format(id_current, ptf_name, float(dquotes.pop())), fontsize=11, fontweight='bold')
-                        title = comment if rems[id_current] is None else comment + " " + rems[id_current]
-                        plt.title(title, loc='right', color="black", backgroundcolor="yellow") 
-                        plt.savefig(path)
-                        plt.close()
-                        # Maj de note, seuil_vente dans ptf
-                        # self.crud.exec_sql(self.crud.get_basename(), """
-                        # update ptf set ptf_note = :note where ptf_id = :id
-                        # """, {"id": id_current, "note": comment, "seuil_vente": optimum[id_current]})
-
-                    draw()
-
-                    # ça repart pour un tour
-                    # self.pout(" " + quote["id"])
-                    dquotes.clear()
-                    dachat.clear()
-                    doptimum.clear()
-                    dseuil.clear()
-                    dcost.clear()
-                    ddate.clear()
-                    dhigh.clear()
-                    dlowh.clear()
-                    dvol.clear()
-                    drsi.clear()
-                    labelx.clear()
-                    id_current = quote["id"]
-                    ptf_name = quote["ptf_name"]
-                    iquote = 0
             if len(dquotes) > 0 : 
-                draw()
-            self.pout("\n")
+                # DESSIN DU GRAPHE
+                """ matplotlib. colors
+                b: blue g: green r: red c: cyan m: magenta y: yellow k: black w: white
+                """
+                fig, ax1 = plt.subplots()
+                fig.set_figwidth(12)
+                fig.set_figheight(6)
+
+                ax1.plot(ddate, dquotes, 'mo-', label='Cotation')
+                ax1.set_ylabel('Cotation en €', fontsize=9)
+                ax1.plot(ddate, dseuil, 'g:', label='Seuil rentabilité', linewidth=2)
+                ax1.plot(ddate, doptimum, 'g-', label="Seuil vente {:.1f} %".format(seuil_vente*100), linewidth=2)
+                ax1.tick_params(axis="x", labelsize=8)
+                ax1.tick_params(axis="y", labelsize=8)
+                ax1.legend(loc="lower left")
+
+                ax2 = ax1.twinx()
+                ax2.plot(ddate, drsi, 'yo-', label='RSI')
+                ax2.set_ylim(0, 100)
+                ax2.set_ylabel('RSI', fontsize=9)
+                ax2.tick_params(axis="y", labelsize=8)
+                ax2.legend(loc="lower right")
+                ax2.grid()
+
+                ax3 = ax1.twinx()
+                ax3.bar(ddate, dvol, color='k', alpha=0.1, width=0.4, label="Volume")
+                ax3.get_yaxis().set_visible(False)
+                ax3.legend(loc="lower center")
+
+                fig.autofmt_xdate()
+                plt.subplots_adjust(left=0.06, bottom=0.1, right=0.93, top=0.90, wspace=None, hspace=None)
+
+                # fig.canvas.draw_idle()
+                plt.xticks(ddate, labelx)
+                # plt.show()
+                # Création du PNG
+                # Recherche du fichier qui peut être classé dans un sous répertoire
+                pattern_path = r"\/png\/(.*?){}\.png".format(quote["id"])
+                comment = ""
+                files = glob.glob(self.crud.get_application_prop("data_directory") + "/png/quotes/**/{}.png".format(quote["id"]), recursive=True)
+                if len(files) == 0:
+                    path = "{}/png/quotes/{}.png".format(self.crud.get_application_prop("data_directory"), quote["id"])
+                else:
+                    path = files[0]
+                    srep1 = re.search(pattern_path, path).group(1)
+                    comment = srep1.replace("quotes", "").replace("/", "")
+
+                plt.suptitle("Cours de {} - {} - {:3.2f} €".format(quote["id"], ptf["ptf_name"], float(dquotes.pop())), fontsize=11, fontweight='bold')
+                title = "TOP" if btop else ""
+                plt.title(title, loc='right', color="black", backgroundcolor="yellow") 
+                plt.savefig(path)
+                plt.close()
+                # Maj de note, seuil_vente dans ptf
+                # self.crud.exec_sql(self.crud.get_basename(), """
+                # update ptf set ptf_note = :note where ptf_id = :id
+                # """, {"id": quote["id"], "note": comment, "seuil_vente": optimum[quote["id"]]})
+
+            # ça repart pour un tour
+            dquotes.clear()
+            doptimum.clear()
+            dseuil.clear()
+            ddate.clear()
+            dhigh.clear()
+            dlow.clear()
+            dvol.clear()
+            drsi.clear()
+            labelx.clear()
+        self.pout("\n")
 
     def compute_rsi(self, data, n=14):
         deltas = np.diff(data)
