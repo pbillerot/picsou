@@ -2,8 +2,6 @@
 # -*- coding:Utf-8 -*-
 """
     Batch de mise à jour des données de la base picsou
-    https://matplotlib.org/stable/gallery/statistics/boxplot_color.html#sphx-glr-gallery-statistics-boxplot-color-py
-    https://matplotlib.org/stable/plot_types/stats/boxplot_plot.html#sphx-glr-plot-types-stats-boxplot-plot-py
 """
 import shutil
 import os
@@ -21,6 +19,8 @@ import random
 import sqlite3
 import matplotlib.pyplot as plt
 import numpy as np
+# import pandas as pd
+# import pandas_ta as ta
 from crud import Crud
 
 class Picsou():
@@ -447,12 +447,13 @@ class Picsou():
                 date = quote["date"]
                 dquotes.append(quote["close"])
                 candle_0 = ""
+                iquote += 1
                 if ope_2 == 0:
                     continue
                 # RSI
-                iquote += 1
                 if iquote >= 13:
                     rsi = self.compute_rsi(dquotes)
+                    #rsi = self.calcStochRSI(pd.DataFrame({"close": dquotes}))
                 # Traitement des chandeliers
                 # étoîle du soir
                 if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 and ope_1 > clo_2 and ope_1 > ope_0 \
@@ -537,6 +538,9 @@ class Picsou():
     def graphQuotes(self):
         """ 
         Création du graphique des cotations avec candle, valeur, volume et rsi
+        https://matplotlib.org/stable/gallery/statistics/boxplot_color.html#sphx-glr-gallery-statistics-boxplot-color-py
+        https://matplotlib.org/stable/plot_types/stats/boxplot_plot.html#sphx-glr-plot-types-stats-boxplot-plot-py
+        https://www.python-simple.com/python-matplotlib/boxplot.php
         """
 
         def mini_date(sdate):
@@ -552,7 +556,6 @@ class Picsou():
         SELECT ptf.*, orders.orders_order, orders.orders_cost_price, orders.orders_time,
         orders.orders_sell_time 
         FROM ptf LEFT OUTER JOIN orders ON orders_ptf_id = ptf_id WHERE ptf_enabled = 1 
-        and ptf_id = 'STMPA.PA'
         ORDER BY ptf_id
         """, {})
         orders = {}
@@ -587,17 +590,22 @@ class Picsou():
             doptimum = []
             dseuil = []
             ddate = []
-            dopen = []
-            dclose = []
             dlow = []
             dhigh = []
             dvol = []
             drsi = []
             labelx = []
+            candles = []
+            colors = []
             for quote in quotes:
                 # chargement des données
                 dvol.append(quote["volume"])
                 dquotes.append(quote["open"])
+                candles.append([quote["low"],quote["close"],quote["open"],quote["high"]])
+                if quote["open"] >= quote["close"]:
+                    colors.append("r")
+                else:
+                    colors.append("b")
 
                 if border:
                     doptimum.append(optimum[quote["id"]])
@@ -605,12 +613,12 @@ class Picsou():
                 else:
                     doptimum.append(None)
                     dseuil.append(None)
-                ddate.append(mini_date(quote["date"]) + " open")
+                ddate.append(mini_date(quote["date"]))
                 labelx.append(mini_date(quote["date"]))
 
-                high = quote["high"] if quote["high"] > quote["open"] else quote["open"]
+                high = quote["high"] #if quote["high"] > quote["open"] else quote["open"]
                 dhigh.append(high)
-                low = quote["low"] if quote["low"] < quote["open"] else quote["open"]
+                low = quote["low"] #if quote["low"] < quote["open"] else quote["open"]
                 dlow.append(high)
                 if quote["rsi"] != 0:
                     drsi.append(quote["rsi"])
@@ -622,19 +630,24 @@ class Picsou():
                 """ matplotlib. colors
                 b: blue g: green r: red c: cyan m: magenta y: yellow k: black w: white
                 """
-                fig, ax1 = plt.subplots()
+                fig, ax = plt.subplots()
                 fig.set_figwidth(12)
                 fig.set_figheight(6)
 
-                ax1.plot(ddate, dquotes, 'mo-', label='Cotation')
-                ax1.set_ylabel('Cotation en €', fontsize=9)
-                ax1.plot(ddate, dseuil, 'g:', label='Seuil rentabilité', linewidth=2)
-                ax1.plot(ddate, doptimum, 'g-', label="Seuil vente {:.1f} %".format(seuil_vente*100), linewidth=2)
-                ax1.tick_params(axis="x", labelsize=8)
-                ax1.tick_params(axis="y", labelsize=8)
-                ax1.legend(loc="lower left")
+                # ax.plot(ddate, dquotes, 'mo-', label='Cotation')
+                ax.set_ylabel('Cotation en €', fontsize=9)
+                ax.plot(ddate, dseuil, 'g:', label='Seuil rentabilité', linewidth=2)
+                ax.plot(ddate, doptimum, 'g-', label="Seuil vente {:.1f} %".format(seuil_vente*100), linewidth=2)
+                ax.tick_params(axis="x", labelsize=8)
+                ax.tick_params(axis="y", labelsize=8)
+                ax.legend(loc="lower left")
+                
+                positions = list(range(0, len(ddate)))
+                ax4 = ax.boxplot(candles, positions=positions, patch_artist=True, whis=1)
+                for patch, color in zip(ax4['boxes'], colors):
+                     patch.set_facecolor(color)
 
-                ax2 = ax1.twinx()
+                ax2 = ax.twinx()
                 ax2.plot(ddate, drsi, 'yo-', label='RSI')
                 ax2.set_ylim(0, 100)
                 ax2.set_ylabel('RSI', fontsize=9)
@@ -642,10 +655,11 @@ class Picsou():
                 ax2.legend(loc="lower right")
                 ax2.grid()
 
-                ax3 = ax1.twinx()
+                ax3 = ax.twinx()
                 ax3.bar(ddate, dvol, color='k', alpha=0.1, width=0.4, label="Volume")
                 ax3.get_yaxis().set_visible(False)
                 ax3.legend(loc="lower center")
+
 
                 fig.autofmt_xdate()
                 plt.subplots_adjust(left=0.06, bottom=0.1, right=0.93, top=0.90, wspace=None, hspace=None)
@@ -666,8 +680,7 @@ class Picsou():
                     comment = srep1.replace("quotes", "").replace("/", "")
 
                 plt.suptitle("Cours de {} - {} - {:3.2f} €".format(quote["id"], ptf["ptf_name"], float(dquotes.pop())), fontsize=11, fontweight='bold')
-                title = "TOP" if btop else ""
-                plt.title(title, loc='right', color="black", backgroundcolor="yellow") 
+                plt.title(ptf["ptf_rem"], loc='right', color="black", backgroundcolor="yellow") 
                 plt.savefig(path)
                 plt.close()
                 # Maj de note, seuil_vente dans ptf
@@ -710,6 +723,66 @@ class Picsou():
             rs = up/down
             rsi[i] = 100. - 100./(1.+rs)
         return rsi[len(rsi)-1]
+
+    def calcRSI(self, data, P=14):
+        # Calculate gains and losses
+        # https://raposa.trade/blog/2-ways-to-trade-the-stochastic-rsi-in-python/
+        data['diff_close'] = data['close'] - data['close'].shift(1)
+        data['gain'] = np.where(data['diff_close']>0,
+            data['diff_close'], 0)
+        data['loss'] = np.where(data['diff_close']<0,
+            np.abs(data['diff_close']), 0)
+        
+        # Get initial values
+        data[['init_avg_gain', 'init_avg_loss']] = data[
+            ['gain', 'loss']].rolling(P).mean()
+        # Calculate smoothed avg gains and losses for all t > P
+        avg_gain = np.zeros(len(data))
+        avg_loss = np.zeros(len(data))
+        
+        for i, _row in enumerate(data.iterrows()):
+            row = _row[1]
+            if i < P - 1:
+                last_row = row.copy()
+                continue
+            elif i == P-1:
+                avg_gain[i] += row['init_avg_gain']
+                avg_loss[i] += row['init_avg_loss']
+            else:
+                avg_gain[i] += ((P - 1) * avg_gain[i-1] + row['gain']) / P
+                avg_loss[i] += ((P - 1) * avg_loss[i-1] + row['loss']) / P
+            
+            last_row = row.copy()
+        
+        data['avg_gain'] = avg_gain
+        data['avg_loss'] = avg_loss
+        # Calculate RS and RSI
+        data['RS'] = data['avg_gain'] / data['avg_loss']
+        data['RSI'] = 100 - 100 / (1 + data['RS'])
+        return data
+
+    def calcStochOscillator(self, data, N=14):
+        data['low_N'] = data['RSI'].rolling(N).min()
+        data['high_N'] = data['RSI'].rolling(N).max()
+        data['StochRSI'] = 100 * (data['RSI'] - data['low_N']) / (data['high_N'] - data['low_N'])
+        return data
+
+    def calcStochRSI(self, data, P=14, N=14):
+        data = self.calcRSI(data, P)
+        data = self.calcStochOscillator(data, N)
+        return data
+
+    def calcReturns(self, df):
+        # Helper function to avoid repeating too much code
+        df['returns'] = df['Close'] / df['Close'].shift(1)
+        df['log_returns'] = np.log(df['returns'])
+        df['strat_returns'] = df['position'].shift(1) * df['returns']
+        df['strat_log_returns'] = df['position'].shift(1) * df['log_returns']
+        df['cum_returns'] = np.exp(df['log_returns'].cumsum()) - 1
+        df['strat_cum_returns'] = np.exp(df['strat_log_returns'].cumsum()) / - 1
+        df['peak'] = df['cum_returns'].cummax()
+        df['strat_peak'] = df['strat_cum_returns'].cummax()
+        return df
 
 if __name__ == '__main__':
 
