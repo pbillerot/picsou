@@ -373,6 +373,7 @@ class Picsou():
         """ 
         Calcul des chandeliers et RSI
         """
+        self.pout("Candles of")
         quotes = self.crud.sql_to_dict(self.crud.get_basename(), """
         SELECT * FROM quotes order by name ,date asc
         """, {})
@@ -424,6 +425,8 @@ class Picsou():
                     dquotes.clear()
                     iquote = 0
                     rsi = 0
+                    self.pout(" {}".format(id))
+
                 # rotation
                 ope_2 = ope_1
                 ope_1 = ope_0
@@ -444,93 +447,92 @@ class Picsou():
                 date = quote["date"]
                 dquotes.append(quote["close"])
                 candle_0 = ""
-                # self.pout("{} {} {} {} {} ...".format(name, ope_0, max_0, min_0, clo_0))
                 if ope_2 == 0:
                     continue
                 # RSI
                 iquote += 1
-                if iquote >= 14:
+                if iquote >= 13:
                     rsi = self.compute_rsi(dquotes)
                 # Traitement des chandeliers
                 # étoîle du soir
                 if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 and ope_1 > clo_2 and ope_1 > ope_0 \
                     and (ope_1-clo_1)/(max_1-min_1) > 0.05:
                     candle_0 = "etoile_du_soir"
-                    self.display("{} {} {}".format(id, date, candle_0))
+                    # self.display("{} {} {}".format(id, date, candle_0))
                 # étoîle du matin
                 if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 > ope_0 and clo_1 > ope_2 and ope_1 < clo_0 \
                     and (ope_1-clo_1)/(max_1-min_1) > 0.05:
                     candle_0 = "etoile_du_matin"
-                    self.display("{} {} {}".format(id, date, candle_0))
+                    # self.display("{} {} {}".format(id, date, candle_0))
                 # bébé abandonné haussier
                 if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 and ope_1 > clo_2 and ope_1 > ope_0 \
                     and (ope_1-clo_1)/(max_1-min_1) < 0.05:
                     candle_0 = "bebe_abandonne_baissier"
-                    self.display("{} {} {}".format(id, date, candle_0))
+                    # self.display("{} {} {}".format(id, date, candle_0))
                 # bébé abandonné baissier
                 if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 > ope_0 and clo_1 > ope_2 and ope_1 < clo_0 \
                     and (ope_1-clo_1)/(max_1-min_1) < 0.05:
                     candle_0 = "bebe_abandonne_haussier"
-                    self.display("{} {} {}".format(id, date, candle_0))
+                    # self.display("{} {} {}".format(id, date, candle_0))
                 # avalement haussier
                 if clo_1 < ope_1 and clo_0 > ope_0 and ope_0 < clo_1 and clo_0 > ope_1:
                     candle_0 = "avalement_haussier"
-                    self.display("{} {} {}".format(id, date, candle_0))
+                    # self.display("{} {} {}".format(id, date, candle_0))
                 # avalement baissier
                 if clo_1 > ope_1 and clo_0 < ope_0 and clo_0 < ope_1 and ope_0 > clo_1:
                     candle_0 = "avalement_baissier"
-                    self.display("{} {} {}".format(id, date, candle_0))
+                    # self.display("{} {} {}".format(id, date, candle_0))
                 # harami haussier
                 if clo_1 < ope_1 and clo_0 > ope_0 and clo_0 < ope_1 and ope_0 > clo_1:
                     candle_0 = "harami_haussier"
-                    self.display("{} {} {}".format(id, date, candle_0))
+                    # self.display("{} {} {}".format(id, date, candle_0))
                 # harami baissier
                 if clo_1 > ope_1 and clo_0 < ope_0 and ope_0 > clo_1 and clo_0 < ope_1:
                     candle_0 = "harami_baissier"
-                    self.display("{} {} {}".format(id, date, candle_0))
+                    # self.display("{} {} {}".format(id, date, candle_0))
                 # les 3 soldats bleus
                 if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 > ope_1 \
                     and ope_1 < clo_2 and ope_1 > ope_2 and clo_1 > clo_2 \
                     and ope_0 < clo_1 and ope_0 > ope_1 and clo_0 > clo_1:
                     candle_0 = "les_3_soldats_bleus"
-                    self.display("{} {} {}".format(id, date, candle_0))
+                    # self.display("{} {} {}".format(id, date, candle_0))
                 # les 3 corbeaux rouges
                 if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 < ope_1 \
                     and ope_1 < ope_2 and ope_1 > clo_2 and clo_1 < clo_2 \
                     and ope_0 < ope_1 and ope_0 > clo_1 and clo_0 < clo_1:
                     candle_0 = "les_3_corbeaux_rouges"
-                    self.display("{} {} {}".format(id, date, candle_0))
+                    # self.display("{} {} {}".format(id, date, candle_0))
                 # poussée haussière
                 if clo_1 > ope_1 and clo_0 < ope_0 \
                     and clo_0 > ope_1 + (clo_1 - ope_1)/2 \
                     and ope_0 > clo_1 + (clo_1 - ope_1)/2:
                     candle_0 = "poussee_baissiere"
-                    self.display("{} {} {}".format(id, date, candle_0))
+                    # self.display("{} {} {}".format(id, date, candle_0))
                 # poussée baissière
                 if clo_1 < ope_1 and clo_0 > ope_0 \
                     and clo_0 > ope_1 + (clo_1 - ope_1)/2 \
                     and ope_0 > clo_1 + (clo_1 - ope_1)/2:
                     candle_0 = "poussee_haussiere"
-                    self.display("{} {} {}".format(id, date, candle_0))
+                    # self.display("{} {} {}".format(id, date, candle_0))
                 # pénétrante haussière
                 if clo_1 < ope_1 and clo_0 > ope_0 \
                     and (clo_0 - ope_0) > (ope_1 - clo_1) \
                     and clo_0 > clo_1 + (ope_1 - clo_1)/2 :
                     candle_0 = "penetrante_haussiere"
-                    self.display("{} {} {}".format(id, date, candle_0))
+                    # self.display("{} {} {}".format(id, date, candle_0))
                 # pénétrante baissière
                 if clo_1 > ope_1 and clo_0 < ope_0 \
                     and (ope_0 - clo_0) > (clo_1 - ope_1) \
                     and clo_0 < ope_1 + (clo_1 - ope_1)/2 :
                     candle_0 = "penetrante_baissiere"
-                    self.display("{} {} {}".format(id, date, candle_0))
+                    # self.display("{} {} {}".format(id, date, candle_0))
 
                 # maj systématique de candle
-                self.display("{} {} rsi:{}".format(id, date, rsi))
+                # self.display("{} {} rsi:{}".format(id, date, rsi))
                 self.crud.exec_sql(self.crud.get_basename(), """
                     update quotes set candle = :candle, rsi = :rsi where id = :id and date = :date
                     """, {"id": id, "date": date, "candle": candle_0, "rsi": rsi})
-
+        self.pout("\n")
 
     def graphQuotes(self):
         """ 

@@ -6,7 +6,7 @@
     "basehost": "/volshare/data/picsou/picsou.sqlite",
     "data_directory": "/volshare/data/picsou",
     "constants": {
-        "qlast_quotes": 45,
+        "qlast_quotes": 60,
         "stake": 1200,
         "cost": 0.0047,
         "macdbuy": 40,
