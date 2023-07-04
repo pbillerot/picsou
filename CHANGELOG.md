@@ -6,6 +6,10 @@ Historique des modifications
 - vérifier rotation de beenux.log
 - vérifier rotation des logs de docker
 
+3.2.1 du 4 juillet 2023
+----------------------
+- `fixed` chemin d'accès à picsou.json
+
 3.2.0 du 4 juillet 2023
 ----------------------
 - `added` graph quotes avec candle rsi mme12 mme26

@@ -64,9 +64,6 @@ class Crud:
             config_name = "picsou_debug.json"
 
         if crud is None:
-            application = self.get_json_content("./application/" + config_name)
-
-            self.set_application(application)
             dir_path = os.path.dirname(os.path.realpath(__file__))
             # chargement de config.json
             os.chdir(dir_path)
@@ -78,6 +75,10 @@ class Crud:
                 param = self.config[key]
                 if not isinstance(self.config[key], dict):
                     self.config[key] = self.config[key].replace("~", os.path.expanduser("~"))
+            # load paramètres de l'application
+            application = self.get_json_content("./application/" + config_name)
+
+            self.set_application(application)
         else:
             if duplicate:
                 self.application = dict(crud.application)
