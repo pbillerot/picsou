@@ -16,14 +16,27 @@
             "envFile": "${workspaceRoot}/.env"
         },
         {
-            "name": "Batch Note",
+            "name": "Note",
             "type": "python",
             "request": "launch",
             "stopOnEntry": false,
             "program": "picsou.py",
             "cwd": "${workspaceRoot}",
             "args": [
-                "-note"
+                "-note","-debug"
+            ],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },
+        {
+            "name": "Quotes",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "picsou.py",
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "-quotes","-debug"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"
@@ -36,59 +49,46 @@
             "program": "picsou.py",
             "cwd": "${workspaceRoot}",
             "args": [
-                "-chandeliers"
+                "-chandeliers","-debug"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"
         },
         {
-            "name": "Batch Quotes",
+            "name": "Graph quotes",
             "type": "python",
             "request": "launch",
             "stopOnEntry": false,
             "program": "picsou.py",
             "cwd": "${workspaceRoot}",
             "args": [
-                "-quotes"
+                "-graph","-debug"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"
         },
         {
-            "name": "Batch Graph quotes",
+            "name": "Analyse",
             "type": "python",
             "request": "launch",
             "stopOnEntry": false,
             "program": "picsou.py",
             "cwd": "${workspaceRoot}",
             "args": [
-                "-graph"
+                "-analyse","-debug"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"
         },
         {
-            "name": "Batch Analyse",
+            "name": "Mail",
             "type": "python",
             "request": "launch",
             "stopOnEntry": false,
             "program": "picsou.py",
             "cwd": "${workspaceRoot}",
             "args": [
-                "-analyse"
-            ],
-            "env": {},
-            "envFile": "${workspaceRoot}/.env"
-        },
-        {
-            "name": "Batch Mail",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry": false,
-            "program": "picsou.py",
-            "cwd": "${workspaceRoot}",
-            "args": [
-                "-mail"
+                "-mail","-debug"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"

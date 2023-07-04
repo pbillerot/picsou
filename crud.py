@@ -50,7 +50,7 @@ class Crud:
     }
     config = {}
 
-    def __init__(self, crud=None, duplicate=False):
+    def __init__(self, crud=None, duplicate=False, args=None):
         """ Initialisation """
 
         self.init_logger()
@@ -58,7 +58,15 @@ class Crud:
         """
         Chargement du dictionnaire config.json
         """
+        self.args = args
+        config_name = "picsou.json"
+        if self.args.debug:
+            config_name = "picsou_debug.json"
+
         if crud is None:
+            application = self.get_json_content("./application/" + config_name)
+
+            self.set_application(application)
             dir_path = os.path.dirname(os.path.realpath(__file__))
             # chargement de config.json
             os.chdir(dir_path)
@@ -80,6 +88,7 @@ class Crud:
                 self.ctx = crud.ctx
                 self.config = crud.config
         self.logger.info("Config %s", self.config)
+        self.logger.info("Paramètres %s", config_name)
     #
     # FONCTIONS GENERALES
     #

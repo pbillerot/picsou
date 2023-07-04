@@ -100,5 +100,6 @@ ENV/
 # mypy
 .mypy_cache/
 
-# logs
+# autres
 /log
+/data/png

@@ -33,12 +33,12 @@ class Picsou():
 
         self.args = args
         # Chargement des paramètres
-        self.crud = Crud()
+        self.crud = Crud(args=self.args)
 
-        application = self.crud.get_json_content(
-            self.crud.config["application_directory"] + "/" + "picsou.json")
+        # application = self.crud.get_json_content(
+        #     self.crud.config["application_directory"] + "/" + "picsou.json")
 
-        self.crud.set_application(application)
+        # self.crud.set_application(application)
 
         self.display("Picsou en action...")
 
@@ -380,7 +380,8 @@ class Picsou():
         """
         self.pout("Candles of")
         quotes = self.crud.sql_to_dict(self.crud.get_basename(), """
-        SELECT * FROM quotes join ptf on ptf_id = id and ptf_enabled = 1 order by name ,date asc
+        SELECT * FROM quotes join ptf on ptf_id = id and ptf_enabled = 1 
+        order by name ,date asc
         """, {})
         ope_0 = 0
         ope_1 = 0
@@ -400,6 +401,11 @@ class Picsou():
         dquotes = []
         iquote = 0
         rsi = 0
+        mme12 = 0
+        mme26 = 0
+        mme9 = 0
+        macd = 0
+        dmacd = []
         if len(quotes) > 0:
             id = ""
             for quote in quotes:
@@ -430,6 +436,11 @@ class Picsou():
                     dquotes.clear()
                     iquote = 0
                     rsi = 0
+                    mme12 = 0
+                    mme26 = 0
+                    mme9 = 0
+                    macd = 0
+                    dmacd.clear()
                     self.pout(" {}".format(id))
 
                 # rotation
@@ -456,9 +467,16 @@ class Picsou():
                 if ope_2 == 0:
                     continue
                 # RSI
-                if iquote >= 13:
+                if iquote >= 12:
                     rsi = self.compute_rsi(dquotes)
+                    mme12 = self.ema(dquotes, 12)
                     #rsi = self.calcStochRSI(pd.DataFrame({"close": dquotes}))
+                if iquote >= 26:
+                    mme26 = self.ema(dquotes, 26)
+                    dmacd.append(mme12-mme26)
+                if iquote >= (26+9):
+                    macd = self.ema(dmacd, 9)
+                #self.display("{} {} MME12:{:.2f} MME26:{:.2f} MACD:{:.2f}".format(id, date, mme12, mme26, macd))                    
                 # Traitement des chandeliers
                 # étoîle du soir
                 if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 and ope_1 > clo_2 and ope_1 > ope_0 \
@@ -536,8 +554,8 @@ class Picsou():
                 # maj systématique de candle
                 # self.display("{} {} rsi:{}".format(id, date, rsi))
                 self.crud.exec_sql(self.crud.get_basename(), """
-                    update quotes set candle = :candle, rsi = :rsi where id = :id and date = :date
-                    """, {"id": id, "date": date, "candle": candle_0, "rsi": rsi})
+                    update quotes set candle = :candle, rsi = :rsi, mme12 = :mme12, mme26 = :mme26, macd = :macd where id = :id and date = :date
+                    """, {"id": id, "date": date, "candle": candle_0, "rsi": rsi, "mme12": mme12, "mme26": mme26, "macd": macd})
         self.pout("\n")
 
     def graphQuotes(self):
@@ -561,10 +579,8 @@ class Picsou():
         SELECT ptf.*, orders.orders_order, orders.orders_cost_price, orders.orders_time,
         orders.orders_sell_time 
         FROM ptf LEFT OUTER JOIN orders ON orders_ptf_id = ptf_id WHERE ptf_enabled = 1 
-        and ptf_id = 'STMPA.PA'
         ORDER BY ptf_id
         """, {})
-        orders = {}
         optimum = {}
         seuil = {}
         border = False
@@ -603,6 +619,9 @@ class Picsou():
             labelx = []
             candles = []
             colors = []
+            mme12 = []
+            mme26 = []
+            macd = []
             for quote in quotes:
                 # chargement des données
                 dvol.append(quote["volume"])
@@ -630,6 +649,9 @@ class Picsou():
                     drsi.append(quote["rsi"])
                 else:
                     drsi.append(None)
+                mme12.append(quote["mme12"])    
+                mme26.append(quote["mme26"])    
+                macd.append(quote["macd"])    
 
             if len(dquotes) > 0 : 
                 # DESSIN DU GRAPHE
@@ -638,40 +660,47 @@ class Picsou():
                 """
                 fig, ax = plt.subplots()
                 fig.set_figwidth(12)
-                fig.set_figheight(6)
+                fig.set_figheight(7)
 
-                # ax.plot(ddate, dquotes, 'mo-', label='Cotation')
+                # ax.plot(ddate[26:], dquotes[26:], 'mo-', label='Cotation')
+                ax.plot(ddate[26:], mme12[26:], 'y:', label='MME12')
+                ax.plot(ddate[26:], mme26[26:], 'r:', label='MME26')
                 ax.set_ylabel('Cotation en €', fontsize=9)
-                ax.plot(ddate[:26], dseuil[:26], 'g:', label='Seuil rentabilité', linewidth=2)
-                ax.plot(ddate[:26], doptimum[:26], 'g-', label="Seuil vente {:.1f} %".format(seuil_vente*100), linewidth=2)
+                ax.plot(ddate[26:], dseuil[26:], 'g:', label='Seuil rentabilité', linewidth=2)
+                ax.plot(ddate[26:], doptimum[26:], 'g-', label="Seuil vente {:.1f} %".format(seuil_vente*100), linewidth=2)
                 ax.tick_params(axis="x", labelsize=8)
                 ax.tick_params(axis="y", labelsize=8)
                 ax.legend(loc="lower left")
                 
-                positions = list(range(0, len(ddate)))
-                ax4 = ax.boxplot(candles[:26], positions=positions[:26], patch_artist=True, whis=1)
+                positions = list(range(0, len(ddate[26:])))
+                ax4 = ax.boxplot(candles[26:], positions=positions, patch_artist=True, whis=1)
                 for patch, color in zip(ax4['boxes'], colors):
                      patch.set_facecolor(color)
 
                 ax2 = ax.twinx()
-                ax2.plot(ddate[:26], drsi[:26], 'yo-', label='RSI')
+                ax2.plot(ddate[26:], drsi[26:], 'c-', label='RSI')
                 ax2.set_ylim(0, 100)
                 ax2.set_ylabel('RSI', fontsize=9)
                 ax2.tick_params(axis="y", labelsize=8)
                 ax2.legend(loc="lower right")
                 ax2.grid()
 
+                # for i in range(len(macd[26:])):
+                #     if macd[i]<0:
+                #         ax2.bar(ddate[26:], macd[i], color = '#ef5350')
+                #     else:
+                #         ax2.bar(ddate[26:], macd[i], color = '#26a69a')
+
                 # ax3 = ax.twinx()
-                # ax3.bar(ddate[:26], dvol[:26], color='k', alpha=0.1, width=0.4, label="Volume")
+                # ax3.bar(ddate[26:], dvol[26:], color='k', alpha=0.1, width=0.4, label="Volume")
                 # ax3.get_yaxis().set_visible(False)
                 # ax3.legend(loc="lower center")
-
 
                 fig.autofmt_xdate()
                 plt.subplots_adjust(left=0.06, bottom=0.1, right=0.93, top=0.90, wspace=None, hspace=None)
 
                 # fig.canvas.draw_idle()
-                plt.xticks(ddate[:26], labelx[:26])
+                plt.xticks(ddate[26:], labelx[26:])
                 # plt.show()
                 # Création du PNG
                 # Recherche du fichier qui peut être classé dans un sous répertoire
@@ -704,6 +733,11 @@ class Picsou():
             dvol.clear()
             drsi.clear()
             labelx.clear()
+            candles.clear()
+            colors.clear()
+            mme12.clear()
+            mme26.clear()
+            macd.clear()
         self.pout("\n")
 
     def compute_rsi(self, data, n=14):
@@ -820,7 +854,8 @@ if __name__ == '__main__':
     parser.add_argument('-analyse', action='store_true', default=False, help="Récupération des graphiques d'analyse")
     parser.add_argument('-chandeliers', action='store_true', default=False, help="Analyse des chandeliers")
     parser.add_argument('-quotescandle', action='store_true', default=False, help="Récup quotes puis Analyse des chandeliers")
-    parser.add_argument('-quotesgraph', action='store_true', default=False, help="Enchainement quotes chnadeliers graph")
+    parser.add_argument('-quotesgraph', action='store_true', default=False, help="Enchainement quotes chandeliers graph")
+    parser.add_argument('-debug', action='store_true', default=False, help="debug = true en mode debug ")
     # print parser.parse_args()
     if parser._get_args() == 0:
         parser.print_help()

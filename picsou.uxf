@@ -69,7 +69,10 @@ CREATE TABLE "quotes" (
 	"adjclose"	REAL,
 	"volume"	INTEGER,
 	"candle"	TEXT DEFAULT '',
-	"rsi"	INTEGER DEFAULT 0
+	"rsi"	NUMERIC DEFAULT 0,
+	"mme12"	NUMERIC DEFAULT 0,
+	"mme26"	NUMERIC DEFAULT 0,
+	"macd"	NUMERIC DEFAULT 0
 );
 
 </panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLNote</id><coordinates><x>460</x><y>100</y><w>260</w><h>200</h></coordinates><panel_attributes>Quotes

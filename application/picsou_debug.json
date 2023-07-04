@@ -1,10 +1,10 @@
 {
-    "title": "PICSOU en action",
+    "title": "PICSOU en debug",
     "info": "Récupération des cours du jour et génération de graphiques",
     "icon_file": "picsou.jpg",
-    "basename": "/volshare/data/picsou/picsou.sqlite",
-    "basehost": "/volshare/data/picsou/picsou.sqlite",
-    "data_directory": "/volshare/data/picsou",
+    "basename": "./data/picsou.sqlite",
+    "basehost": "./data/picsou.sqlite",
+    "data_directory": "./data",
     "constants": {
         "qlast_quotes": 100,
         "stake": 2000,
