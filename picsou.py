@@ -729,6 +729,25 @@ class Picsou():
             rsi[i] = 100. - 100./(1.+rs)
         return rsi[len(rsi)-1]
 
+    def ema(self, data, window):
+        """ Calculates Exponential Moving Average """
+        if len(data) < 2 * window:
+            window = len(data)//2
+            if window < 2 : return None
+            # raise ValueError("data is too short")
+        c = 2.0 / (window + 1)
+        current_ema = self.sma(data[-window*2:-window], window)
+        for value in data[-window:]:
+            current_ema = (c * value) + ((1 - c) * current_ema)
+        return current_ema        
+
+
+    def sma(self, data, window):
+        """ Calculates Simple Moving Average """
+        if len(data) < window:
+            return sum(data) / float(len(data))
+        return sum(data[-window:]) / float(window)
+
     def calcRSI(self, data, P=14):
         # Calculate gains and losses
         # https://raposa.trade/blog/2-ways-to-trade-the-stochastic-rsi-in-python/
