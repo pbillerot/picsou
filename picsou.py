@@ -561,6 +561,7 @@ class Picsou():
         SELECT ptf.*, orders.orders_order, orders.orders_cost_price, orders.orders_time,
         orders.orders_sell_time 
         FROM ptf LEFT OUTER JOIN orders ON orders_ptf_id = ptf_id WHERE ptf_enabled = 1 
+        and ptf_id = 'STMPA.PA'
         ORDER BY ptf_id
         """, {})
         orders = {}
@@ -641,36 +642,36 @@ class Picsou():
 
                 # ax.plot(ddate, dquotes, 'mo-', label='Cotation')
                 ax.set_ylabel('Cotation en €', fontsize=9)
-                ax.plot(ddate, dseuil, 'g:', label='Seuil rentabilité', linewidth=2)
-                ax.plot(ddate, doptimum, 'g-', label="Seuil vente {:.1f} %".format(seuil_vente*100), linewidth=2)
+                ax.plot(ddate[:26], dseuil[:26], 'g:', label='Seuil rentabilité', linewidth=2)
+                ax.plot(ddate[:26], doptimum[:26], 'g-', label="Seuil vente {:.1f} %".format(seuil_vente*100), linewidth=2)
                 ax.tick_params(axis="x", labelsize=8)
                 ax.tick_params(axis="y", labelsize=8)
                 ax.legend(loc="lower left")
                 
                 positions = list(range(0, len(ddate)))
-                ax4 = ax.boxplot(candles, positions=positions, patch_artist=True, whis=1)
+                ax4 = ax.boxplot(candles[:26], positions=positions[:26], patch_artist=True, whis=1)
                 for patch, color in zip(ax4['boxes'], colors):
                      patch.set_facecolor(color)
 
                 ax2 = ax.twinx()
-                ax2.plot(ddate, drsi, 'yo-', label='RSI')
+                ax2.plot(ddate[:26], drsi[:26], 'yo-', label='RSI')
                 ax2.set_ylim(0, 100)
                 ax2.set_ylabel('RSI', fontsize=9)
                 ax2.tick_params(axis="y", labelsize=8)
                 ax2.legend(loc="lower right")
                 ax2.grid()
 
-                ax3 = ax.twinx()
-                ax3.bar(ddate, dvol, color='k', alpha=0.1, width=0.4, label="Volume")
-                ax3.get_yaxis().set_visible(False)
-                ax3.legend(loc="lower center")
+                # ax3 = ax.twinx()
+                # ax3.bar(ddate[:26], dvol[:26], color='k', alpha=0.1, width=0.4, label="Volume")
+                # ax3.get_yaxis().set_visible(False)
+                # ax3.legend(loc="lower center")
 
 
                 fig.autofmt_xdate()
                 plt.subplots_adjust(left=0.06, bottom=0.1, right=0.93, top=0.90, wspace=None, hspace=None)
 
                 # fig.canvas.draw_idle()
-                plt.xticks(ddate, labelx)
+                plt.xticks(ddate[:26], labelx[:26])
                 # plt.show()
                 # Création du PNG
                 # Recherche du fichier qui peut être classé dans un sous répertoire

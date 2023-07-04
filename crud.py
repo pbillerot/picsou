@@ -185,8 +185,8 @@ class Crud:
         except sqlite3.Error as ex:
             if conn: conn.rollback()
             self.logger.error(getattr(ex, 'message', repr(ex)))
-            print("Error", exc.args[0], sql, params)
-            self.add_error("%s %s %s" % (exc.args[0], sql, params))
+            print("Error", ex.args[0], sql, params)
+            self.add_error("%s %s %s" % (ex.args[0], sql, params))
         finally:
             if conn:
                 conn.close()
