@@ -664,7 +664,9 @@ class Picsou():
                 fig.set_figwidth(12)
                 fig.set_figheight(7)
 
-                # ax.plot(ddate[35:], dquotes[35:], 'mo-', label='Cotation')
+                plt.suptitle("Cours de {} - {} - {:.2f} € Rsi: {:.0f} Macd: {:.1f}".format(quote["id"], ptf["ptf_name"], quote["close"], quote["rsi"], quote["macd"]-quote["signal"]), fontsize=11, fontweight='bold')
+                plt.title(ptf["ptf_rem"], loc='right', pad='10', color="black", fontsize=10, backgroundcolor="yellow") 
+
                 ax.set_ylabel('Cotation en €', fontsize=9)
                 ax.plot(ddate[35:], dseuil[35:], 'g:', label='Seuil rentabilité', linewidth=2)
                 ax.plot(ddate[35:], doptimum[35:], 'g-', label="Seuil vente {:.1f} %".format(seuil_vente*100), linewidth=2)
@@ -732,8 +734,6 @@ class Picsou():
                     srep1 = re.search(pattern_path, path).group(1)
                     comment = srep1.replace("quotes", "").replace("/", "")
 
-                plt.suptitle("Cours de {} - {} - {:3.2f} €".format(quote["id"], ptf["ptf_name"], float(dquotes.pop())), fontsize=11, fontweight='bold')
-                plt.title(ptf["ptf_rem"], loc='right', color="black", backgroundcolor="yellow") 
                 plt.savefig(path)
                 plt.close()
 

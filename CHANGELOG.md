@@ -5,6 +5,12 @@ Historique des modifications
 ### À venir :
 - vérifier rotation de beenux.log
 - vérifier rotation des logs de docker
+- commentaire un peu plus haut dans graph
+- analyse 4 mois inutile
+
+3.3.1 du 5 juillet 2023
+----------------------
+- `added` title avec rsi et macd
 
 3.3.0 du 5 juillet 2023
 ----------------------
