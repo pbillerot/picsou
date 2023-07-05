@@ -518,7 +518,7 @@ class Picsou():
                     candle_0 = "harami_baissier"
                     # self.display("{} {} {}".format(id, date, candle_0))
                 # les 3 soldats bleus
-                if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 > ope_1 \
+                if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 > ope_0 \
                     and ope_1 < clo_2 and ope_1 > ope_2 and clo_1 > clo_2 \
                     and ope_0 < clo_1 and ope_0 > ope_1 and clo_0 > clo_1:
                     candle_0 = "les_3_soldats_bleus"
@@ -676,7 +676,7 @@ class Picsou():
                 
                 positions = list(range(0, len(ddate[35:])))
                 ax4 = ax.boxplot(candles[35:], positions=positions, patch_artist=True, whis=1)
-                for patch, color in zip(ax4['boxes'], colors):
+                for patch, color in zip(ax4['boxes'], colors[35:]):
                      patch.set_facecolor(color)
 
                 ax2 = ax.twinx()

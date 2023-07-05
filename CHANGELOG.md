@@ -7,6 +7,10 @@ Historique des modifications
 - vérifier rotation des logs de docker
 - les 3 corbeaux en erreur bleu rouge bleu
 
+3.3.3 du 5 juillet 2023
+----------------------
+- `fixed` décalage des couleurs des bougies
+
 3.3.2 du 5 juillet 2023
 ----------------------
 - `fixed` correction des 3 corbeaux rouges
