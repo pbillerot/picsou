@@ -406,6 +406,7 @@ class Picsou():
         mme9 = 0
         macd = 0
         dmacd = []
+        signal = 0
         if len(quotes) > 0:
             id = ""
             for quote in quotes:
@@ -441,6 +442,7 @@ class Picsou():
                     mme9 = 0
                     macd = 0
                     dmacd.clear()
+                    signal = 0
                     self.pout(" {}".format(id))
 
                 # rotation
@@ -473,10 +475,11 @@ class Picsou():
                     #rsi = self.calcStochRSI(pd.DataFrame({"close": dquotes}))
                 if iquote >= 26:
                     mme26 = self.ema(dquotes, 26)
-                    dmacd.append(mme12-mme26)
+                    macd = mme12-mme26
+                    dmacd.append(macd)
                 if iquote >= (26+9):
-                    macd = self.ema(dmacd, 9)
-                #self.display("{} {} MME12:{:.2f} MME26:{:.2f} MACD:{:.2f}".format(id, date, mme12, mme26, macd))                    
+                    signal = self.ema(dmacd, 9)
+                #self.display("{} {} MME12:{:.2f} MME26:{:.2f} MACD:{:.2f} SIGNAL:{:.2f}".format(id, date, mme12, mme26, macd, signal))                    
                 # Traitement des chandeliers
                 # étoîle du soir
                 if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 and ope_1 > clo_2 and ope_1 > ope_0 \
@@ -554,8 +557,8 @@ class Picsou():
                 # maj systématique de candle
                 # self.display("{} {} rsi:{}".format(id, date, rsi))
                 self.crud.exec_sql(self.crud.get_basename(), """
-                    update quotes set candle = :candle, rsi = :rsi, mme12 = :mme12, mme26 = :mme26, macd = :macd where id = :id and date = :date
-                    """, {"id": id, "date": date, "candle": candle_0, "rsi": rsi, "mme12": mme12, "mme26": mme26, "macd": macd})
+                    update quotes set candle = :candle, rsi = :rsi, macd = :macd, signal = :signal where id = :id and date = :date
+                    """, {"id": id, "date": date, "candle": candle_0, "rsi": rsi, "macd": macd, "signal": signal})
         self.pout("\n")
 
     def graphQuotes(self):
@@ -581,6 +584,7 @@ class Picsou():
         FROM ptf LEFT OUTER JOIN orders ON orders_ptf_id = ptf_id WHERE ptf_enabled = 1 
         ORDER BY ptf_id
         """, {})
+        # and ptf_id = "STMPA.PA"
         optimum = {}
         seuil = {}
         border = False
@@ -619,9 +623,8 @@ class Picsou():
             labelx = []
             candles = []
             colors = []
-            mme12 = []
-            mme26 = []
             macd = []
+            signal = []
             for quote in quotes:
                 # chargement des données
                 dvol.append(quote["volume"])
@@ -649,8 +652,7 @@ class Picsou():
                     drsi.append(quote["rsi"])
                 else:
                     drsi.append(None)
-                mme12.append(quote["mme12"])    
-                mme26.append(quote["mme26"])    
+                signal.append(quote["signal"])    
                 macd.append(quote["macd"])    
 
             if len(dquotes) > 0 : 
@@ -662,37 +664,53 @@ class Picsou():
                 fig.set_figwidth(12)
                 fig.set_figheight(7)
 
-                # ax.plot(ddate[26:], dquotes[26:], 'mo-', label='Cotation')
-                ax.plot(ddate[26:], mme12[26:], 'y:', label='MME12')
-                ax.plot(ddate[26:], mme26[26:], 'r:', label='MME26')
+                # ax.plot(ddate[35:], dquotes[35:], 'mo-', label='Cotation')
                 ax.set_ylabel('Cotation en €', fontsize=9)
-                ax.plot(ddate[26:], dseuil[26:], 'g:', label='Seuil rentabilité', linewidth=2)
-                ax.plot(ddate[26:], doptimum[26:], 'g-', label="Seuil vente {:.1f} %".format(seuil_vente*100), linewidth=2)
+                ax.plot(ddate[35:], dseuil[35:], 'g:', label='Seuil rentabilité', linewidth=2)
+                ax.plot(ddate[35:], doptimum[35:], 'g-', label="Seuil vente {:.1f} %".format(seuil_vente*100), linewidth=2)
                 ax.tick_params(axis="x", labelsize=8)
                 ax.tick_params(axis="y", labelsize=8)
                 ax.legend(loc="lower left")
                 
-                positions = list(range(0, len(ddate[26:])))
-                ax4 = ax.boxplot(candles[26:], positions=positions, patch_artist=True, whis=1)
+                positions = list(range(0, len(ddate[35:])))
+                ax4 = ax.boxplot(candles[35:], positions=positions, patch_artist=True, whis=1)
                 for patch, color in zip(ax4['boxes'], colors):
                      patch.set_facecolor(color)
 
                 ax2 = ax.twinx()
-                ax2.plot(ddate[26:], drsi[26:], 'c-', label='RSI')
+                ax2.plot(ddate[35:], drsi[35:], 'c-', label='RSI')
                 ax2.set_ylim(0, 100)
                 ax2.set_ylabel('RSI', fontsize=9)
                 ax2.tick_params(axis="y", labelsize=8)
                 ax2.legend(loc="lower right")
                 ax2.grid()
 
-                # for i in range(len(macd[26:])):
-                #     if macd[i]<0:
-                #         ax2.bar(ddate[26:], macd[i], color = '#ef5350')
+                ax3 = ax.twinx()
+                dgreen = []
+                dred = []
+                for i in range(len(macd)):
+                    if macd[i]-signal[i] >= 0:
+                        dgreen.append(macd[i]-signal[i])
+                        dred.append(0)
+                    else:
+                        dgreen.append(0)
+                        dred.append(macd[i]-signal[i])
+                # ax3.plot(ddate[35:], dmacd[35:], 'y-', label='MACD')              
+                ax3.bar(ddate[35:], dgreen[35:], color='#26a69a', alpha=0.2, label="MACD >0")
+                ax3.bar(ddate[35:], dred[35:], color='#ef5350', alpha=0.2, label="MACD <0")
+                # for i in range(len(macd[35:])):
+                #     if macd[i]-signal[i]>0:
+                #         ax3.bar(ddate[35:], macd[i]-signal[i], color = '#ef5350')
                 #     else:
-                #         ax2.bar(ddate[26:], macd[i], color = '#26a69a')
+                #         ax3.bar(ddate[35:], macd[i]-signal[i], color = '#26a69a')
+                ax3.get_yaxis().set_visible(False)
+                # ax3.set_ylabel('MACD', fontsize=9)
+                # ax3.tick_params(axis="y", labelsize=8)
+                #ax3.grid()
+                ax3.legend(loc="lower center")
 
                 # ax3 = ax.twinx()
-                # ax3.bar(ddate[26:], dvol[26:], color='k', alpha=0.1, width=0.4, label="Volume")
+                # ax3.bar(ddate[35:], dvol[35:], color='k', alpha=0.1, width=0.4, label="Volume")
                 # ax3.get_yaxis().set_visible(False)
                 # ax3.legend(loc="lower center")
 
@@ -700,7 +718,7 @@ class Picsou():
                 plt.subplots_adjust(left=0.06, bottom=0.1, right=0.93, top=0.90, wspace=None, hspace=None)
 
                 # fig.canvas.draw_idle()
-                plt.xticks(ddate[26:], labelx[26:])
+                plt.xticks(ddate[35:], labelx[35:])
                 # plt.show()
                 # Création du PNG
                 # Recherche du fichier qui peut être classé dans un sous répertoire
@@ -718,6 +736,9 @@ class Picsou():
                 plt.title(ptf["ptf_rem"], loc='right', color="black", backgroundcolor="yellow") 
                 plt.savefig(path)
                 plt.close()
+
+
+
                 # Maj de note, seuil_vente dans ptf
                 # self.crud.exec_sql(self.crud.get_basename(), """
                 # update ptf set ptf_note = :note where ptf_id = :id
@@ -735,9 +756,8 @@ class Picsou():
             labelx.clear()
             candles.clear()
             colors.clear()
-            mme12.clear()
-            mme26.clear()
             macd.clear()
+            signal.clear()
         self.pout("\n")
 
     def compute_rsi(self, data, n=14):

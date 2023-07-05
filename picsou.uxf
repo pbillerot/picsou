@@ -52,7 +52,7 @@ CREATE TABLE "orders" (
 	"orders_rem"	TEXT DEFAULT '',
 	PRIMARY KEY("orders_id" AUTOINCREMENT)
 );
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>410</x><y>350</y><w>230</w><h>250</h></coordinates><panel_attributes>QUOTES
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>410</x><y>350</y><w>230</w><h>280</h></coordinates><panel_attributes>QUOTES
 halign=left
 valign=top
 bg=blue
@@ -70,9 +70,8 @@ CREATE TABLE "quotes" (
 	"volume"	INTEGER,
 	"candle"	TEXT DEFAULT '',
 	"rsi"	NUMERIC DEFAULT 0,
-	"mme12"	NUMERIC DEFAULT 0,
-	"mme26"	NUMERIC DEFAULT 0,
-	"macd"	NUMERIC DEFAULT 0
+	"macd"	NUMERIC DEFAULT 0,
+	"signal"	NUMERIC DEFAULT 0
 );
 
 </panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLNote</id><coordinates><x>460</x><y>100</y><w>260</w><h>200</h></coordinates><panel_attributes>Quotes

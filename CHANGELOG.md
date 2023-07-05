@@ -6,6 +6,10 @@ Historique des modifications
 - vérifier rotation de beenux.log
 - vérifier rotation des logs de docker
 
+3.3.0 du 5 juillet 2023
+----------------------
+- `added` candle rsi macd sur le même graphique
+
 3.2.1 du 4 juillet 2023
 ----------------------
 - `fixed` chemin d'accès à picsou.json
