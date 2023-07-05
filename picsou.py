@@ -524,7 +524,7 @@ class Picsou():
                     candle_0 = "les_3_soldats_bleus"
                     # self.display("{} {} {}".format(id, date, candle_0))
                 # les 3 corbeaux rouges
-                if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 < ope_1 \
+                if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 < ope_0 \
                     and ope_1 < ope_2 and ope_1 > clo_2 and clo_1 < clo_2 \
                     and ope_0 < ope_1 and ope_0 > clo_1 and clo_0 < clo_1:
                     candle_0 = "les_3_corbeaux_rouges"

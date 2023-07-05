@@ -5,8 +5,11 @@ Historique des modifications
 ### À venir :
 - vérifier rotation de beenux.log
 - vérifier rotation des logs de docker
-- commentaire un peu plus haut dans graph
-- analyse 4 mois inutile
+- les 3 corbeaux en erreur bleu rouge bleu
+
+3.3.2 du 5 juillet 2023
+----------------------
+- `fixed` correction des 3 corbeaux rouges
 
 3.3.1 du 5 juillet 2023
 ----------------------
