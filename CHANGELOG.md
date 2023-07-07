@@ -7,6 +7,10 @@ Historique des modifications
 - vérifier rotation des logs de docker
 - les 3 corbeaux en erreur bleu rouge bleu
 
+3.3.4 du 7 juillet 2023
+----------------------
+- `changed` barre rentabilité en vente seulement à partir de la date d'achat
+
 3.3.3 du 5 juillet 2023
 ----------------------
 - `fixed` décalage des couleurs des bougies

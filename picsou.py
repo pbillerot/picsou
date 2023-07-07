@@ -579,12 +579,13 @@ class Picsou():
 
         # Chargement des commentaires et du top
         ptfs = self.crud.sql_to_dict(self.crud.get_basename(), """
-        SELECT ptf.*, orders.orders_order, orders.orders_cost_price, orders.orders_time,
-        orders.orders_sell_time 
-        FROM ptf LEFT OUTER JOIN orders ON orders_ptf_id = ptf_id WHERE ptf_enabled = 1 
+        SELECT ptf.*, orders.orders_order, orders.orders_cost_price, orders.orders_time
+        FROM ptf LEFT OUTER JOIN orders ON orders_ptf_id = ptf_id 
+        and orders_order = 'buy' and (orders_sell_time is null or orders_sell_time = '')
+        WHERE ptf_enabled = 1 
         ORDER BY ptf_id
         """, {})
-        # and ptf_id = "STMPA.PA"
+        # and ptf_id = "SAN.PA"
         optimum = {}
         seuil = {}
         border = False
@@ -604,6 +605,7 @@ class Picsou():
             if ptf["orders_cost_price"] is not None:
                 optimum[ptf["ptf_id"]] = ptf["orders_cost_price"] + ptf["orders_cost_price"] * seuil_vente
                 seuil[ptf["ptf_id"]] = ptf["orders_cost_price"]
+                order_date = ptf["orders_time"][:10]
             else:
                 optimum[ptf["ptf_id"]] = 0
                 seuil[ptf["ptf_id"]] = 0
@@ -635,12 +637,13 @@ class Picsou():
                 else:
                     colors.append("b")
 
-                if border:
-                    doptimum.append(optimum[quote["id"]])
-                    dseuil.append(seuil[quote["id"]])
+                if border and quote["date"] >= order_date:
+                        doptimum.append(optimum[quote["id"]])
+                        dseuil.append(seuil[quote["id"]])
                 else:
                     doptimum.append(None)
                     dseuil.append(None)
+
                 ddate.append(mini_date(quote["date"]))
                 labelx.append(mini_date(quote["date"]))
 
@@ -668,11 +671,12 @@ class Picsou():
                 plt.title(ptf["ptf_rem"], loc='right', pad='10', color="black", fontsize=10, backgroundcolor="yellow") 
 
                 ax.set_ylabel('Cotation en €', fontsize=9)
-                ax.plot(ddate[35:], dseuil[35:], 'g:', label='Seuil rentabilité', linewidth=2)
-                ax.plot(ddate[35:], doptimum[35:], 'g-', label="Seuil vente {:.1f} %".format(seuil_vente*100), linewidth=2)
+                if border:
+                    ax.plot(ddate[35:], dseuil[35:], 'g:', label='Seuil rentabilité', linewidth=2)
+                    ax.plot(ddate[35:], doptimum[35:], 'g-', label="Seuil vente {:.1f} %".format(seuil_vente*100), linewidth=2)
+                    ax.legend(loc="lower left")
                 ax.tick_params(axis="x", labelsize=8)
                 ax.tick_params(axis="y", labelsize=8)
-                ax.legend(loc="lower left")
                 
                 positions = list(range(0, len(ddate[35:])))
                 ax4 = ax.boxplot(candles[35:], positions=positions, patch_artist=True, whis=1)
