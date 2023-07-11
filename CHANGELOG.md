@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 -
 
+3.4.1 du 11 juillet 2023
+----------------------
+- `fixed` correction paramètres sqlite
+
 3.4.0 du 11 juillet 2023
 ----------------------
 - `added` génération historique 1 an des valeurs stockées dans pase picsou postgres

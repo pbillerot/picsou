@@ -217,13 +217,13 @@ class Picsou():
                     iline += 1
                 conn = self.crud.open_sqlite()
                 cursor = conn.cursor()
-                cursor.execute("DELETE FROM QUOTES WHERE id = %s", (ptf["ptf_id"],))
+                cursor.execute("DELETE FROM QUOTES WHERE id = ?", (ptf["ptf_id"],))
                 cursor.executemany("""INSERT INTO QUOTES
                     (id, name, date, open, high, low, close, adjclose, volume)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""", quotes)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", quotes)
                 conn.commit()
                 if len(quotes) == 0:
-                    print(" Erreur quotes %s".format(ptf["ptf_id"]))
+                    print(" Erreur quotes {}".format(ptf["ptf_id"]))
                     exit(1)
                 else:
                     # on alimente quote avec la dernière cotation
@@ -278,6 +278,7 @@ class Picsou():
         for ptf in ptfs:
             self.pout(" {}".format(ptf["ptf_id"]))
             close1_last = 0.0
+            close1 = 0.0
             # Chargement de l'historique
             qlast = self.crud.get_config("qlast_quotes")
             # remplissage de la table quotes - dernière quote dans self.quote
@@ -299,11 +300,9 @@ class Picsou():
                     close1 = quote["close"]
 
             self.crud.exec_sql("sqlite", """
-            update ptf set ptf_quote = :close where ptf_id = :id
-            """, {"id": ptf["ptf_id"], "close": self.quote["close"]})
-            self.crud.exec_sql("sqlite", """
-            update ptf set ptf_gain = ((:close-:close1)/:close1)*100 where ptf_id = :id
-            """, {"id": ptf["ptf_id"], "close1": close1_last, "close": self.quote["close"]})
+            update ptf set ptf_quote = :close, ptf_gain = ((:close-:close1)/:close1)*100
+            where ptf_id = :id
+            """, {"id": ptf["ptf_id"], "close1": close1_last, "close": close1})
 
             # self.pout(" {}/{}".format(self.quote["close"], close1_last))
 
