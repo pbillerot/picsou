@@ -1,6 +1,6 @@
 {
-    "python.pythonPath": "venv/bin/python",
+    "python.terminal.activateEnvironment": true,
     "python.linting.pylintPath": "venv/bin/python",
     "python.linting.pylintEnabled": true,
-    "python.linting.enabled": true,
+    "python.linting.enabled": true
 }

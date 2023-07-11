@@ -1,3 +1,25 @@
 {
-    "application_directory": "./application"
+    "title": "PICSOU en action",
+    "info": "Récupération des cours du jour et génération de graphiques",
+    "icon_file": "picsou.jpg",
+    "qlast_histo": 390,
+    "qlast_quotes": 120,
+    "stake": 2000,
+    "cost": 0.0047,
+    "macdbuy": 40,
+    "rsimin": 30,
+    "rsimax": 60,
+    "hours_limit": 17,
+    "minutes_limit": 15,
+    "declench_percent": -4,
+    "seuil_vente": 0.035,
+    "seuil_achat": 0.035,
+    "data_directory": "in local.json",
+    "sqlite": "in local.json",
+    "pg_ssh": "in local.json",
+    "pg_user": "in local.json",
+    "pg_password": "in local.json",
+    "pg_host": "in local.json",
+    "pg_port": "in local.json",
+    "pg_dbname": "in local.json"
 }

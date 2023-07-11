@@ -16,6 +16,19 @@
             "envFile": "${workspaceRoot}/.env"
         },
         {
+            "name": "Test",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "picsou.py",
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "-test"
+            ],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },
+        {
             "name": "Note",
             "type": "python",
             "request": "launch",
@@ -23,7 +36,20 @@
             "program": "picsou.py",
             "cwd": "${workspaceRoot}",
             "args": [
-                "-note","-debug"
+                "-note"
+            ],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },
+        {
+            "name": "Histo",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "picsou.py",
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "-histo"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"
@@ -36,7 +62,7 @@
             "program": "picsou.py",
             "cwd": "${workspaceRoot}",
             "args": [
-                "-quotes","-debug"
+                "-quotes"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"
@@ -49,7 +75,7 @@
             "program": "picsou.py",
             "cwd": "${workspaceRoot}",
             "args": [
-                "-chandeliers","-debug"
+                "-chandeliers"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"
@@ -62,7 +88,20 @@
             "program": "picsou.py",
             "cwd": "${workspaceRoot}",
             "args": [
-                "-graph","-debug"
+                "-graph"
+            ],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },
+        {
+            "name": "Graph histo",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "picsou.py",
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "-graphhisto"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"
@@ -75,7 +114,7 @@
             "program": "picsou.py",
             "cwd": "${workspaceRoot}",
             "args": [
-                "-analyse","-debug"
+                "-analyse"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"
@@ -88,7 +127,7 @@
             "program": "picsou.py",
             "cwd": "${workspaceRoot}",
             "args": [
-                "-mail","-debug"
+                "-mail"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"

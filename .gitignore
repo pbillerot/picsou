@@ -103,3 +103,4 @@ ENV/
 # autres
 /log
 /data/png
+local.json

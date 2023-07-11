@@ -89,4 +89,19 @@ csv_to_quotes
 -..
 </panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLNote</id><coordinates><x>560</x><y>10</y><w>230</w><h>70</h></coordinates><panel_attributes>Note..
 bg=red
-la table CDAYS n'est plus nécessaire</panel_attributes><additional_attributes></additional_attributes></element></diagram>
+la table CDAYS n'est plus nécessaire</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>650</x><y>350</y><w>230</w><h>280</h></coordinates><panel_attributes>HISTO
+halign=left
+valign=top
+bg=blue
+--
+CREATE TABLE "histo" (
+	"id"	TEXT,
+	"name"	TEXT,
+	"date"	TEXT,
+	"open"	REAL,
+	"high"	REAL,
+	"low"	REAL,
+	"close"	REAL,
+	"adjclose" REAL,
+	"volume"	INTEGER
+)</panel_attributes><additional_attributes></additional_attributes></element></diagram>
