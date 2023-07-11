@@ -826,7 +826,6 @@ class Picsou():
         FROM ptf LEFT OUTER JOIN orders ON orders_ptf_id = ptf_id
         and orders_order = 'buy' and (orders_sell_time is null or orders_sell_time = '')
         WHERE ptf_enabled = 1
-        and ptf_id = "SAN.PA"
         ORDER BY ptf_id
         """, {})
         # and ptf_id = "SAN.PA"

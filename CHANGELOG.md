@@ -3,9 +3,11 @@
 Historique des modifications
 
 ### À venir :
-- vérifier rotation de beenux.log
-- vérifier rotation des logs de docker
-- les 3 corbeaux en erreur bleu rouge bleu
+-
+
+3.4.0 du 11 juillet 2023
+----------------------
+- `added` génération historique 1 an des valeurs stockées dans pase picsou postgres
 
 3.3.4 du 7 juillet 2023
 ----------------------
@@ -108,16 +110,16 @@ Historique des modifications
 
 0.2.0 du 17 juillet 2021
 ----------------------
-- `fixed` picsou -h 
+- `fixed` picsou -h
 
 0.1.0 du 17 juillet 2021
 ----------------------
 - `added` picsou batch isolé du projet crudenome
 
 ###### Types de changements:
-- `added` *pour les nouvelles fonctionnalités.*  
-- `changed` *pour les changements aux fonctionnalités préexistantes.*  
-- `deprecated` *pour les fonctionnalités qui seront bientôt supprimées*.  
-- `removed` *pour les fonctionnalités désormais supprimées.*  
-- `fixed` *pour les corrections de bugs.*  
-- `security` *en cas de vulnérabilités.*  
+- `added` *pour les nouvelles fonctionnalités.*
+- `changed` *pour les changements aux fonctionnalités préexistantes.*
+- `deprecated` *pour les fonctionnalités qui seront bientôt supprimées*.
+- `removed` *pour les fonctionnalités désormais supprimées.*
+- `fixed` *pour les corrections de bugs.*
+- `security` *en cas de vulnérabilités.*
