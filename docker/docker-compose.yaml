@@ -1,15 +1,14 @@
 
 version: "3.3"
 services:
-  beenux:
+  beethon:
     build:
       context: .
-    image: beenux
-    container_name: beenux
+    image: beethon
+    container_name: beethon
     restart: unless-stopped
     volumes:
       - /volshare:/volshare
-      - /volshare/logs:/var/log
     networks:
     - docker_web
 

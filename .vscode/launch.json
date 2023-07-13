@@ -68,19 +68,6 @@
             "envFile": "${workspaceRoot}/.env"
         },
         {
-            "name": "Chandeliers",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry": false,
-            "program": "picsou.py",
-            "cwd": "${workspaceRoot}",
-            "args": [
-                "-chandeliers"
-            ],
-            "env": {},
-            "envFile": "${workspaceRoot}/.env"
-        },
-        {
             "name": "Graph quotes",
             "type": "python",
             "request": "launch",

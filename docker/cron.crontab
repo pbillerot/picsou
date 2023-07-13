@@ -8,14 +8,27 @@
 # |  |  |  |  |
 # *  *  *  *  *  user command to be executed
 
-# Picsou Analyse à 7h10 
-10 7 * * 1-5 python3 /app/picsou/picsou.py -analyse | ts >>/var/log/beenux.log
+CRON_TZ=Europe/Paris
+
+# >/proc/1/fd/1 2>/proc/1/fd/2
+# https://lostindetails.com/articles/How-to-run-cron-inside-Docker
+# A simple solution for this problem is just redirecting the stdout/stderr
+# of the child processes to the main process (which will always have PID 1)
+# There is one problem left, which is that the output of those jobs don't show up in the docker logs,
+# because docker only tracks the stdout/stderr of the first process.
+
+# Picsou historique
+10 7 * * 1-5 /usr/local/bin/python3 /volshare/dev/picsou/picsou.py -histo -graphhisto >/proc/1/fd/1 2>/proc/1/fd/2
+
+# Picsou Analyse à 6h10
+# 10 6 * * 1-5 /usr/local/bin/python3 /volshare/dev/picsou/picsou.py -analyse >/proc/1/fd/1 2>/proc/1/fd/2
 
 # Picsou Quotes et Graph du lundi au vendredi de 9h à 18h toutes les 5 minutes
-*/5 9-17 * * 1-5 python3 /app/picsou/picsou.py -quotescandle | ts >>/var/log/beenux.log
+*/5 9-17 * * 1-5 /usr/local/bin/python3 /volshare/dev/picsou/picsou.py -quotesgraph >/proc/1/fd/1 2>/proc/1/fd/2
 
-# Toutes les 6 minutes
-*/7 * * * * echo "DO RE MI FA SO LA SI..." | ts >>/var/log/beenux.log
+# Toutes les n minutes
+# */3 * * * * echo "DO RE MI FA SO LA SI..." >/proc/1/fd/1 2>/proc/1/fd/2
+# 46 11 * * * echo "SI LA SO FA MI RE DO..." >/proc/1/fd/1 2>/proc/1/fd/2
 
 # crontab cron.crontab
 # crontab -l

@@ -11,11 +11,17 @@ import sys
 import glob
 import re
 import random
+import decimal
 # pip install requets
 import requests
 # pip install matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+# csv
+from contextlib import closing
+import csv
+from codecs import iterdecode
+
 from crud import Crud
 
 class Picsou():
@@ -50,19 +56,8 @@ class Picsou():
         if self.args.analyse:
            self.graphFromBoursier()
 
-        if self.args.note:
-           self.update_note()
-
-        if self.args.chandeliers:
-           self.chandeliers()
-
-        if self.args.quotescandle:
-            self.quotes()
-            self.chandeliers()
-
         if self.args.quotesgraph:
             self.quotes()
-            self.chandeliers()
             self.graphQuotes()
 
         self.display("Picsou en relache")
@@ -134,10 +129,48 @@ class Picsou():
             res = req.get(url, headers=header)
         return res.content
 
+    def csv_to_histo_old(self, ptf, nbj):
+        """
+        Récupération de l'historique via l'api alphavantage
+        https://www.alphavantage.co/documentation/
+        https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=IBM&apikey=demo'
+        CSV 0     1    2    3   4     5              6
+        timestamp,open,high,low,close,adjusted_close,volume,dividend_amount,split_coefficient
+        2023-07-11,96.56,97.56,95.92,97.22,97.22,113607,0.0000,1.0
+        """
+        url = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&outputsize=full&datatype=csv&symbol={}&apikey={}".format(ptf["ptf_id"], self.crud.get_config("apikey"))
+        with requests.get(url, stream=True) as r:
+            quotes = []
+            conn = self.crud.open_pg()
+            try:
+                lines = (line.decode('utf-8') for line in r.iter_lines())
+                start = True
+                for row in csv.reader(lines):
+                    if start:
+                        start = False
+                        continue
+                    record = [ptf["ptf_id"], row[0], row[1], row[2], row[3], row[4], row[5], row[6]]
+                    quotes.append(record)
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM HISTO WHERE id = %s", [ptf["ptf_id"]])
+                cursor.executemany("""INSERT INTO HISTO
+                    (id, date, open, high, low, close, adjclose, volume)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""", quotes)
+                conn.commit()
+                if len(quotes) == 0:
+                    print(" Erreur quotes {}".format(ptf["ptf_id"]))
+                    exit(1)
+            except BaseException as e:
+                print(" Error {}".format(e))
+                conn.rollback()
+            else:
+                conn.commit()
+            finally:
+                conn.close()
+
     def csv_to_histo(self, ptf, nbj, header, cookies):
         """
-        Récupération des derniers cours d'une action
-        https://www.python-simple.com/python-autres-modules-non-standards/sqlite3.php
+        Récupération de l'historique des cours des actions
         """
         # end_date = int(time.mktime(datetime.datetime.now().timetuple()))
         end_date = int(time.time())
@@ -153,30 +186,33 @@ class Picsou():
                 for block in res.iter_content(256):
                     if b'error' in block:
                         raise ValueError("ERREUR yahoo %s" % block)
+
                 if res.encoding is None:
                     res.encoding = 'utf-8'
                 lines = res.iter_lines()
                 iline = 0
                 quotes = []
                 for line in lines:
-                    line = ptf["ptf_id"] + "," + ptf["ptf_name"] + "," + str(line).replace("b'", "").replace("'", "")
+                    line = ptf["ptf_id"] + "," + str(line).replace("b'", "").replace("'", "")
                     if "null" in line:
                         continue
                     if iline > 0 and line.find("null") == -1:
-                        quotes.append(line.split(","))
+                        quote = line.split(",")
+                        quotes.append(quote)
                         # print line.split(",")
                     iline += 1
+                # enregistrement dans la table HISTO
                 cursor = conn.cursor()
                 cursor.execute("DELETE FROM HISTO WHERE id = %s", [ptf["ptf_id"]])
                 cursor.executemany("""INSERT INTO HISTO
-                    (id, name, date, open, high, low, close, adjclose, volume)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""", quotes)
+                    (id, date, open, high, low, close, adjclose, volume)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""", quotes)
                 conn.commit()
                 if len(quotes) == 0:
                     print(" Erreur quotes {}".format(ptf["ptf_id"]))
                     exit(1)
             except BaseException as e:
-                print(" Error {}".format(e))
+                print("csv_to_histo Error {}".format(e))
                 conn.rollback()
             else:
                 conn.commit()
@@ -195,7 +231,7 @@ class Picsou():
         .format(ptf["ptf_id"], start_date, end_date)
         # self.display(url)
         with requests.Session() as req:
-            conn = None
+            conn = self.crud.open_pg()
             try:
                 res = req.get(url, headers=header, cookies=cookies)
                 for block in res.iter_content(256):
@@ -207,20 +243,140 @@ class Picsou():
                 lines = res.iter_lines()
                 iline = 0
                 quotes = []
+                closes = []
+                close1 = '0.0'
                 for line in lines:
-                    line = ptf["ptf_id"] + "," + ptf["ptf_name"] + "," + str(line).replace("b'", "").replace("'", "")
+                    line = ptf["ptf_id"] + "," + str(line).replace("b'", "").replace("'", "")
                     if "null" in line:
                         continue
                     if iline > 0 and line.find("null") == -1:
-                        quotes.append(line.split(","))
+                        quote = line.split(",")
+                        quote.append(str(close1))
+                        quotes.append(quote)
+                        closes.append(float(quote[5]))
+                        close1 = quote[5]
                         # print line.split(",")
                     iline += 1
-                conn = self.crud.open_sqlite()
+                # calcul candle 012 rsi macd signal
+                rsi = 0
+                mme12 = 0
+                mme26 = 0
+                mme9 = 0
+                macd = 0
+                dmacd = []
+                signal = 0
+                iquote = 0
+                ope_0 = 0
+                ope_1 = 0
+                ope_2 = 0
+                max_0 = 0
+                max_1 = 0
+                max_2 = 0
+                min_0 = 0
+                min_1 = 0
+                min_2 = 0
+                clo_0 = 0
+                clo_1 = 0
+                clo_2 = 0
+                for quote in quotes:
+                    if iquote >= 12:
+                        mme12 = self.ema(closes[:iquote+1], 12)
+                    if iquote >= 14:
+                        rsi = self.compute_rsi(closes[:iquote+1])
+                    if iquote >= 26:
+                        mme26 = self.ema(closes[:iquote+1], 26)
+                        macd = mme12-mme26
+                        dmacd.append(macd)
+                    if iquote >= (26+9):
+                        signal = self.ema(dmacd, 9)
+                    quotes[iquote].append(str(rsi))
+                    quotes[iquote].append(str(macd))
+                    quotes[iquote].append(str(signal))
+                    # Traitement des chandeliers
+                    #           2     3     4    5      6         7       8       9    10    11      12
+                    # id, date, open, high, low, close, adjclose, volume, close1, rsi, macd, signal, candle
+                    # étoîle du soir
+                    candle = ""
+                    # rotation
+                    ope_2 = ope_1
+                    ope_1 = ope_0
+                    max_2 = max_1
+                    max_1 = max_0
+                    min_2 = min_1
+                    min_1 = min_0
+                    clo_2 = clo_1
+                    clo_1 = clo_0
+                    # valorisation
+                    ope_0 = float(quote[2])
+                    max_0 = float(quote[3])
+                    min_0 = float(quote[4])
+                    clo_0 = float(quote[5])
+                    # candle
+                    if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 and ope_1 > clo_2 and ope_1 > ope_0 \
+                        and (ope_1-clo_1)/(max_1-min_1) > 0.05:
+                        candle = "etoile_du_soir"
+                    # étoîle du matin
+                    if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 > ope_0 and clo_1 > ope_2 and ope_1 < clo_0 \
+                        and (ope_1-clo_1)/(max_1-min_1) > 0.05:
+                        candle = "etoile_du_matin"
+                    # bébé abandonné haussier
+                    if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 and ope_1 > clo_2 and ope_1 > ope_0 \
+                        and (ope_1-clo_1)/(max_1-min_1) < 0.05:
+                        candle = "bebe_abandonne_baissier"
+                    # bébé abandonné baissier
+                    if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 > ope_0 and clo_1 > ope_2 and ope_1 < clo_0 \
+                        and (ope_1-clo_1)/(max_1-min_1) < 0.05:
+                        candle = "bebe_abandonne_haussier"
+                    # avalement haussier
+                    if clo_1 < ope_1 and clo_0 > ope_0 and ope_0 < clo_1 and clo_0 > ope_1:
+                        candle = "avalement_haussier"
+                    # avalement baissier
+                    if clo_1 > ope_1 and clo_0 < ope_0 and clo_0 < ope_1 and ope_0 > clo_1:
+                        candle = "avalement_baissier"
+                    # harami haussier
+                    if clo_1 < ope_1 and clo_0 > ope_0 and clo_0 < ope_1 and ope_0 > clo_1:
+                        candle = "harami_haussier"
+                    # harami baissier
+                    if clo_1 > ope_1 and clo_0 < ope_0 and ope_0 > clo_1 and clo_0 < ope_1:
+                        candle = "harami_baissier"
+                    # les 3 soldats bleus
+                    if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 > ope_0 \
+                        and ope_1 < clo_2 and ope_1 > ope_2 and clo_1 > clo_2 \
+                        and ope_0 < clo_1 and ope_0 > ope_1 and clo_0 > clo_1:
+                        candle = "les_3_soldats_bleus"
+                    # les 3 corbeaux rouges
+                    if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 < ope_0 \
+                        and ope_1 < ope_2 and ope_1 > clo_2 and clo_1 < clo_2 \
+                        and ope_0 < ope_1 and ope_0 > clo_1 and clo_0 < clo_1:
+                        candle = "les_3_corbeaux_rouges"
+                    # poussée haussière
+                    if clo_1 > ope_1 and clo_0 < ope_0 \
+                        and clo_0 > ope_1 + (clo_1 - ope_1)/2 \
+                        and ope_0 > clo_1 + (clo_1 - ope_1)/2:
+                        candle = "poussee_baissiere"
+                    # poussée baissière
+                    if clo_1 < ope_1 and clo_0 > ope_0 \
+                        and clo_0 > ope_1 + (clo_1 - ope_1)/2 \
+                        and ope_0 > clo_1 + (clo_1 - ope_1)/2:
+                        candle = "poussee_haussiere"
+                    # pénétrante haussière
+                    if clo_1 < ope_1 and clo_0 > ope_0 \
+                        and (clo_0 - ope_0) > (ope_1 - clo_1) \
+                        and clo_0 > clo_1 + (ope_1 - clo_1)/2 :
+                        candle = "penetrante_haussiere"
+                    # pénétrante baissière
+                    if clo_1 > ope_1 and clo_0 < ope_0 \
+                        and (ope_0 - clo_0) > (clo_1 - ope_1) \
+                        and clo_0 < ope_1 + (clo_1 - ope_1)/2 :
+                        candle = "penetrante_baissiere"
+                    quotes[iquote].append(candle)
+                    iquote = iquote+1
+                # enregistrement dans QUOTES
                 cursor = conn.cursor()
-                cursor.execute("DELETE FROM QUOTES WHERE id = ?", (ptf["ptf_id"],))
+                cursor.execute("DELETE FROM QUOTES WHERE id = %s", [ptf["ptf_id"]])
                 cursor.executemany("""INSERT INTO QUOTES
-                    (id, name, date, open, high, low, close, adjclose, volume)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", quotes)
+                    (id, date, open, high, low, close, adjclose, volume, close1, rsi, macd, signal, candle)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", quotes)
                 conn.commit()
                 if len(quotes) == 0:
                     print(" Erreur quotes {}".format(ptf["ptf_id"]))
@@ -228,10 +384,10 @@ class Picsou():
                 else:
                     # on alimente quote avec la dernière cotation
                     # pour récup dans picsou_batch
-                    col_csv = ['id', 'name', 'date', 'open', 'high', 'low', 'close', 'adj close', 'volume']
+                    col_csv = ['id', 'date', 'open', 'high', 'low', 'close', 'adjclose', 'volume', 'close1']
                     self.quote = dict(zip(col_csv, quotes.pop()))
             except BaseException as e:
-                print(" Error {}".format(e))
+                print("csv_to_quotes Error {}".format(e))
                 conn.rollback()
             else:
                 conn.commit()
@@ -251,94 +407,79 @@ class Picsou():
 
     def histo(self):
         ptfs = self.crud.sql_to_dict("sqlite", """
-        SELECT * FROM ptf where ptf_enabled = '1' ORDER BY ptf_id
+        SELECT * FROM ptf where ptf_enabled = '1'
+        ORDER BY ptf_id
         """, {})
+        # AND ptf_id = 'SW.PA'
         # Partage du header et du cookie entre toutes les requêtes
         header, crumb, cookies = self.get_crumbs_and_cookies('ACA.PA')
+
         self.pout("Histo of")
         for ptf in ptfs:
             self.pout(" {}".format(ptf["ptf_id"]))
-            close1_last = 0.0
             # Chargement de l'historique
-            qlast = self.crud.get_config("qlast_histo")
-            # remplissage de la table histo - dernière quote dans self.quote
-            # connexion à la base
-            self.csv_to_histo(ptf, qlast, header, cookies)
+            nbj = self.crud.get_config("qlast_histo")
+            # remplissage de la table histo
+            self.csv_to_histo(ptf, nbj, header, cookies)
 
         self.display("")
 
     def quotes(self):
-        ptfs = self.crud.sql_to_dict("sqlite", """
-        SELECT * FROM ptf where ptf_enabled = '1' ORDER BY ptf_id
-        """, {})
-        # Partage du header et du cookie entre toutes les requêtes
-        header, crumb, cookies = self.get_crumbs_and_cookies('ACA.PA')
+        conn = self.crud.open_pg()
+        try:
+            ptfs = self.crud.sql_to_dict("pg", """
+            SELECT * FROM ptf where ptf_enabled = '1'
+            ORDER BY ptf_id
+            """, {})
+            # AND ptf_id = 'SW.PA'
+            # Partage du header et du cookie entre toutes les requêtes
+            header, crumb, cookies = self.get_crumbs_and_cookies('ACA.PA')
 
-        self.pout("Quote of")
-        for ptf in ptfs:
-            self.pout(" {}".format(ptf["ptf_id"]))
-            close1_last = 0.0
-            close1 = 0.0
-            # Chargement de l'historique
-            qlast = self.crud.get_config("qlast_quotes")
-            # remplissage de la table quotes - dernière quote dans self.quote
-            self.csv_to_quotes(ptf, qlast, header, cookies)
-
-            # Calcul du percent par rapport à la veille
-            cours = self.crud.sql_to_dict("sqlite", """
-            SELECT * FROM quotes WHERE id = :id order by id ,date
-            """, {"id": ptf["ptf_id"]})
-            if len(cours) > 0:
+            self.pout("Quote of")
+            for ptf in ptfs:
+                self.pout(" {}".format(ptf["ptf_id"]))
+                close1_last = 0.0
                 close1 = 0.0
-                for quote in cours:
-                    if close1 == 0.0 :
-                        close1 = quote["open"]
-                    self.crud.exec_sql("sqlite", """
-                    update quotes set close1 = :close1 where id = :id and date = :date
-                    """, {"id": quote["id"], "close1": close1, "date": quote["date"]})
-                    close1_last = close1
-                    close1 = quote["close"]
+                # Chargement de l'historique
+                qlast = self.crud.get_config("qlast_quotes")
+                # remplissage de la table quotes - dernière quote dans self.quote
+                self.csv_to_quotes(ptf, qlast, header, cookies)
 
-            self.crud.exec_sql("sqlite", """
-            update ptf set ptf_quote = :close, ptf_gain = ((:close-:close1)/:close1)*100
-            where ptf_id = :id
-            """, {"id": ptf["ptf_id"], "close1": close1_last, "close": close1})
-
-            # self.pout(" {}/{}".format(self.quote["close"], close1_last))
-
-        # calcul cours_percent
-        # self.crud.exec_sql("sqlite", """
-        # UPDATE cdays
-        # set cdays_percent = ( (cdays_close - cdays_close1) / cdays_close1) * 100
-        # """, {})
+                # maj quote et gain du jour dans ptf
+                cursor = conn.cursor()
+                cursor.execute("""
+                update ptf set ptf_quote = %(close)s::numeric, ptf_gain = ((%(close)s::numeric-%(close1)s::numeric)/%(close1)s::numeric)*100
+                where ptf_id = %(id)s
+                """, {"id": ptf["ptf_id"], "close1": self.quote["close1"], "close": self.quote["adjclose"]})
+                conn.commit()
+            # maj orders quote et gain en cours
+            cursor.execute("""
+            update orders set orders_quote =
+            (select close from quotes where id = orders_ptf_id and date = (select max(date) from quotes where id = orders_ptf_id))
+            where orders_sell_time is null or orders_sell_time = ''
+            """, {})
+            conn.commit()
+            conn.execute("""
+            update orders set orders_gain = orders_quote * orders_quantity - orders_buy * orders_quantity - orders_buy * orders_quantity * %(cost)s - orders_quote * orders_quantity * %(cost)s
+            """, {"cost": self.crud.get_config("cost")})
+            conn.commit()
+            cursor.execute("""
+            update orders set orders_gainp = (orders_gain / (orders_buy * orders_quantity)) * 100
+            """, {})
+            conn.commit()
+            cursor.execute("""
+            update orders set orders_debit = orders_buy * orders_quantity + orders_buy * orders_quantity * %(cost)s
+            """, {"cost": self.crud.get_config("cost")})
+            conn.commit()
+        except BaseException as e:
+            print("quotes Error {}".format(e))
+            conn.rollback()
+        else:
+            conn.commit()
+        finally:
+            conn.close()
 
         self.display("")
-
-    def update_note(self):
-        """ Mise à jour du champ note avec des infos pertinentes pour le trading """
-        ptfs = self.crud.sql_to_dict("sqlite", """
-            SELECT * FROM ptf where ptf_enabled = '1' order by ptf_id
-            """, {})
-        for ptf in ptfs:
-            quotes = self.crud.sql_to_dict("sqlite", """
-            SELECT * FROM quotes where id = :id order by date desc limit 1
-            """, {"id": ptf["ptf_id"]})
-            if quotes is None : continue
-            quote = quotes[0]
-            """
-            - P4 : si quotemin < -4 %
-            - Q0 : si quotemin < 0 et close > close1
-            """
-            note = ""
-            pmin = (quote["low"] - quote["close1"])/quote["close1"]
-            if float(pmin) < -0.04 : note = "P4"
-            if quote["low"] < quote["close1"] and quote["close"] > quote["close1"] :
-                note += " Q+"
-            self.crud.exec_sql("sqlite", """
-                update ptf set ptf_note = :note where ptf_id = :id
-                """, {"id": ptf["ptf_id"], "note": note})
-            if note != "" :
-                self.display("{} : {}".format(ptf["ptf_id"], note))
 
     # Récupération des graphiques sur investir.lesechos.fr
     # sur 1 an
@@ -416,193 +557,6 @@ class Picsou():
 
         self.pout("\n")
 
-    def chandeliers(self):
-        """
-        Calcul des chandeliers et RSI
-        """
-        self.pout("Candles of")
-        quotes = self.crud.sql_to_dict("sqlite", """
-        SELECT * FROM quotes join ptf on ptf_id = id and ptf_enabled = 1
-        order by name ,date asc
-        """, {})
-        ope_0 = 0
-        ope_1 = 0
-        ope_2 = 0
-        max_0 = 0
-        max_1 = 0
-        max_2 = 0
-        min_0 = 0
-        min_1 = 0
-        min_2 = 0
-        clo_0 = 0
-        clo_1 = 0
-        clo_2 = 0
-        candle_0 = ""
-        candle_1 = ""
-        candle_2 = ""
-        dquotes = []
-        iquote = 0
-        rsi = 0
-        mme12 = 0
-        mme26 = 0
-        mme9 = 0
-        macd = 0
-        dmacd = []
-        signal = 0
-        if len(quotes) > 0:
-            id = ""
-            for quote in quotes:
-                # rotation
-                if id == "" or id != quote["id"]:
-                    if id != "":
-                        # maj ptf.ptf_candlex
-                        self.crud.exec_sql("sqlite", """
-                        update ptf set ptf_candle0 = :candle0, ptf_candle1 = :candle1, ptf_candle2 = :candle2, ptf_rsi = :rsi
-                        where ptf_id = :id
-                        """, {"id": id, "candle0": candle_0, "candle1": candle_1, "candle2": candle_2, "rsi": rsi})
-                    ope_0 = 0
-                    ope_1 = 0
-                    ope_2 = 0
-                    min_0 = 0
-                    min_1 = 0
-                    min_2 = 0
-                    max_0 = 0
-                    max_1 = 0
-                    max_2 = 0
-                    clo_0 = 0
-                    clo_1 = 0
-                    clo_2 = 0
-                    candle_0 = ""
-                    candle_1 = ""
-                    candle_2 = ""
-                    id = quote["id"]
-                    dquotes.clear()
-                    iquote = 0
-                    rsi = 0
-                    mme12 = 0
-                    mme26 = 0
-                    mme9 = 0
-                    macd = 0
-                    dmacd.clear()
-                    signal = 0
-                    self.pout(" {}".format(id))
-
-                # rotation
-                ope_2 = ope_1
-                ope_1 = ope_0
-                max_2 = max_1
-                max_1 = max_0
-                min_2 = min_1
-                min_1 = min_0
-                clo_2 = clo_1
-                clo_1 = clo_0
-                candle_2 = candle_1
-                candle_1 = candle_0
-                # initialisation
-                ope_0 = quote["open"]
-                max_0 = quote["high"]
-                min_0 = quote["low"]
-                clo_0 = quote["close"]
-                id = quote["id"]
-                date = quote["date"]
-                dquotes.append(quote["close"])
-                candle_0 = ""
-                iquote += 1
-                if ope_2 == 0:
-                    continue
-                # RSI
-                if iquote >= 12:
-                    rsi = self.compute_rsi(dquotes)
-                    mme12 = self.ema(dquotes, 12)
-                    #rsi = self.calcStochRSI(pd.DataFrame({"close": dquotes}))
-                if iquote >= 26:
-                    mme26 = self.ema(dquotes, 26)
-                    macd = mme12-mme26
-                    dmacd.append(macd)
-                if iquote >= (26+9):
-                    signal = self.ema(dmacd, 9)
-                #self.display("{} {} MME12:{:.2f} MME26:{:.2f} MACD:{:.2f} SIGNAL:{:.2f}".format(id, date, mme12, mme26, macd, signal))
-                # Traitement des chandeliers
-                # étoîle du soir
-                if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 and ope_1 > clo_2 and ope_1 > ope_0 \
-                    and (ope_1-clo_1)/(max_1-min_1) > 0.05:
-                    candle_0 = "etoile_du_soir"
-                    # self.display("{} {} {}".format(id, date, candle_0))
-                # étoîle du matin
-                if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 > ope_0 and clo_1 > ope_2 and ope_1 < clo_0 \
-                    and (ope_1-clo_1)/(max_1-min_1) > 0.05:
-                    candle_0 = "etoile_du_matin"
-                    # self.display("{} {} {}".format(id, date, candle_0))
-                # bébé abandonné haussier
-                if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 and ope_1 > clo_2 and ope_1 > ope_0 \
-                    and (ope_1-clo_1)/(max_1-min_1) < 0.05:
-                    candle_0 = "bebe_abandonne_baissier"
-                    # self.display("{} {} {}".format(id, date, candle_0))
-                # bébé abandonné baissier
-                if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 > ope_0 and clo_1 > ope_2 and ope_1 < clo_0 \
-                    and (ope_1-clo_1)/(max_1-min_1) < 0.05:
-                    candle_0 = "bebe_abandonne_haussier"
-                    # self.display("{} {} {}".format(id, date, candle_0))
-                # avalement haussier
-                if clo_1 < ope_1 and clo_0 > ope_0 and ope_0 < clo_1 and clo_0 > ope_1:
-                    candle_0 = "avalement_haussier"
-                    # self.display("{} {} {}".format(id, date, candle_0))
-                # avalement baissier
-                if clo_1 > ope_1 and clo_0 < ope_0 and clo_0 < ope_1 and ope_0 > clo_1:
-                    candle_0 = "avalement_baissier"
-                    # self.display("{} {} {}".format(id, date, candle_0))
-                # harami haussier
-                if clo_1 < ope_1 and clo_0 > ope_0 and clo_0 < ope_1 and ope_0 > clo_1:
-                    candle_0 = "harami_haussier"
-                    # self.display("{} {} {}".format(id, date, candle_0))
-                # harami baissier
-                if clo_1 > ope_1 and clo_0 < ope_0 and ope_0 > clo_1 and clo_0 < ope_1:
-                    candle_0 = "harami_baissier"
-                    # self.display("{} {} {}".format(id, date, candle_0))
-                # les 3 soldats bleus
-                if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 > ope_0 \
-                    and ope_1 < clo_2 and ope_1 > ope_2 and clo_1 > clo_2 \
-                    and ope_0 < clo_1 and ope_0 > ope_1 and clo_0 > clo_1:
-                    candle_0 = "les_3_soldats_bleus"
-                    # self.display("{} {} {}".format(id, date, candle_0))
-                # les 3 corbeaux rouges
-                if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 < ope_0 \
-                    and ope_1 < ope_2 and ope_1 > clo_2 and clo_1 < clo_2 \
-                    and ope_0 < ope_1 and ope_0 > clo_1 and clo_0 < clo_1:
-                    candle_0 = "les_3_corbeaux_rouges"
-                    # self.display("{} {} {}".format(id, date, candle_0))
-                # poussée haussière
-                if clo_1 > ope_1 and clo_0 < ope_0 \
-                    and clo_0 > ope_1 + (clo_1 - ope_1)/2 \
-                    and ope_0 > clo_1 + (clo_1 - ope_1)/2:
-                    candle_0 = "poussee_baissiere"
-                    # self.display("{} {} {}".format(id, date, candle_0))
-                # poussée baissière
-                if clo_1 < ope_1 and clo_0 > ope_0 \
-                    and clo_0 > ope_1 + (clo_1 - ope_1)/2 \
-                    and ope_0 > clo_1 + (clo_1 - ope_1)/2:
-                    candle_0 = "poussee_haussiere"
-                    # self.display("{} {} {}".format(id, date, candle_0))
-                # pénétrante haussière
-                if clo_1 < ope_1 and clo_0 > ope_0 \
-                    and (clo_0 - ope_0) > (ope_1 - clo_1) \
-                    and clo_0 > clo_1 + (ope_1 - clo_1)/2 :
-                    candle_0 = "penetrante_haussiere"
-                    # self.display("{} {} {}".format(id, date, candle_0))
-                # pénétrante baissière
-                if clo_1 > ope_1 and clo_0 < ope_0 \
-                    and (ope_0 - clo_0) > (clo_1 - ope_1) \
-                    and clo_0 < ope_1 + (clo_1 - ope_1)/2 :
-                    candle_0 = "penetrante_baissiere"
-                    # self.display("{} {} {}".format(id, date, candle_0))
-
-                # maj systématique de candle
-                # self.display("{} {} rsi:{}".format(id, date, rsi))
-                self.crud.exec_sql("sqlite", """
-                    update quotes set candle = :candle, rsi = :rsi, macd = :macd, signal = :signal where id = :id and date = :date
-                    """, {"id": id, "date": date, "candle": candle_0, "rsi": rsi, "macd": macd, "signal": signal})
-        self.pout("\n")
-
     def graphQuotes(self):
         """
         Création du graphique des cotations avec candle, valeur, volume et rsi
@@ -620,14 +574,14 @@ class Picsou():
         seuil_achat = self.crud.get_config("seuil_achat")
 
         # Chargement des commentaires et du top
-        ptfs = self.crud.sql_to_dict("sqlite", """
+        ptfs = self.crud.sql_to_dict("pg", """
         SELECT ptf.*, orders.orders_order, orders.orders_cost_price, orders.orders_time
         FROM ptf LEFT OUTER JOIN orders ON orders_ptf_id = ptf_id
         and orders_order = 'buy' and (orders_sell_time is null or orders_sell_time = '')
         WHERE ptf_enabled = 1
         ORDER BY ptf_id
         """, {})
-        # and ptf_id = "SAN.PA"
+        # and ptf_id = "SW.PA"
         optimum = {}
         seuil = {}
         border = False
@@ -645,15 +599,15 @@ class Picsou():
             else:
                 border = False
             if ptf["orders_cost_price"] is not None:
-                optimum[ptf["ptf_id"]] = ptf["orders_cost_price"] + ptf["orders_cost_price"] * seuil_vente
+                optimum[ptf["ptf_id"]] = ptf["orders_cost_price"] + ptf["orders_cost_price"] *  decimal.Decimal(seuil_vente)
                 seuil[ptf["ptf_id"]] = ptf["orders_cost_price"]
                 order_date = ptf["orders_time"][:10]
             else:
                 optimum[ptf["ptf_id"]] = 0
                 seuil[ptf["ptf_id"]] = 0
 
-            quotes = self.crud.sql_to_dict("sqlite", """
-            SELECT * FROM quotes where id = :id order by id ,date
+            quotes = self.crud.sql_to_dict("pg", """
+            SELECT * FROM quotes where id = %(id)s order by id ,date
             """, {"id": ptf["ptf_id"]})
 
             dquotes = []
@@ -673,7 +627,7 @@ class Picsou():
                 # chargement des données
                 dvol.append(quote["volume"])
                 dquotes.append(quote["open"])
-                candles.append([quote["low"],quote["close"],quote["open"],quote["high"]])
+                candles.append([quote["low"],quote["adjclose"],quote["open"],quote["high"]])
                 if quote["open"] >= quote["close"]:
                     colors.append("r")
                 else:
@@ -783,13 +737,6 @@ class Picsou():
                 plt.savefig(path)
                 plt.close()
 
-
-
-                # Maj de note, seuil_vente dans ptf
-                # self.crud.exec_sql("sqlite", """
-                # update ptf set ptf_note = :note where ptf_id = :id
-                # """, {"id": quote["id"], "note": comment, "seuil_vente": optimum[quote["id"]]})
-
             # ça repart pour un tour
             dquotes.clear()
             doptimum.clear()
@@ -820,7 +767,7 @@ class Picsou():
         seuil_achat = self.crud.get_config("seuil_achat")
 
         # Chargement des commentaires et du top
-        ptfs = self.crud.sql_to_dict("sqlite", """
+        ptfs = self.crud.sql_to_dict("pg", """
         SELECT ptf.*, orders.orders_order, orders.orders_cost_price, orders.orders_time
         FROM ptf LEFT OUTER JOIN orders ON orders_ptf_id = ptf_id
         and orders_order = 'buy' and (orders_sell_time is null or orders_sell_time = '')
@@ -845,7 +792,7 @@ class Picsou():
             else:
                 border = False
             if ptf["orders_cost_price"] is not None:
-                optimum[ptf["ptf_id"]] = ptf["orders_cost_price"] + ptf["orders_cost_price"] * seuil_vente
+                optimum[ptf["ptf_id"]] = ptf["orders_cost_price"] + ptf["orders_cost_price"] * decimal.Decimal(seuil_vente)
                 seuil[ptf["ptf_id"]] = ptf["orders_cost_price"]
                 order_date = ptf["orders_time"][:10]
             else:
@@ -870,7 +817,7 @@ class Picsou():
                 # chargement des données
                 dvol.append(quote["volume"])
                 dquotes.append(quote["open"])
-                candles.append([quote["low"],quote["close"],quote["open"],quote["high"]])
+                candles.append([quote["low"],quote["adjclose"],quote["open"],quote["high"]])
                 if quote["open"] >= quote["close"]:
                     colors.append("r")
                 else:
@@ -1029,7 +976,6 @@ class Picsou():
             current_ema = (c * value) + ((1 - c) * current_ema)
         return current_ema
 
-
     def sma(self, data, window):
         """ Calculates Simple Moving Average """
         if len(data) < window:
@@ -1104,13 +1050,10 @@ if __name__ == '__main__':
     parser.add_argument('-sms', action='store_true', default=False, help="Envoi de SMS de recommandation")
     parser.add_argument('-graph', action='store_true', default=False, help="Création graphique derniers cours")
     parser.add_argument('-graphhisto', action='store_true', default=False, help="Création graphique historique cours")
-    parser.add_argument('-note', action='store_true', default=False, help="Mise à jour du bloc note")
     parser.add_argument('-quotes', action='store_true', default=False, help="Récupération des cours du jour")
     parser.add_argument('-histo', action='store_true', default=False, help="Récupération de l'historique des cours")
     parser.add_argument('-analyse', action='store_true', default=False, help="Récupération des graphiques d'analyse")
-    parser.add_argument('-chandeliers', action='store_true', default=False, help="Analyse des chandeliers")
-    parser.add_argument('-quotescandle', action='store_true', default=False, help="Récup quotes puis Analyse des chandeliers")
-    parser.add_argument('-quotesgraph', action='store_true', default=False, help="Enchainement quotes chandeliers graph")
+    parser.add_argument('-quotesgraph', action='store_true', default=False, help="Enchainement quotes graph")
     # print parser.parse_args()
     if parser._get_args() == 0:
         parser.print_help()

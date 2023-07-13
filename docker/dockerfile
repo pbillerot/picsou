@@ -1,42 +1,32 @@
-# IMAGE UBUNTU
-FROM ubuntu:20.04
+# IMAGE DEBIAN
+FROM python:3.11-slim-bookworm
 MAINTAINER pbillerot@github.com
 
-# ENVIRONNEMENT
-ENV DEBIAN_FRONTEND="noninteractive"
+# Disable Prompt During Packages Installation
+# ENV DEBIAN_FRONTEND=noninteractive
+# ENV DEBIAN_FRONTEND teletype
+
+# DEBIAN CONFIG
+RUN apt-get update
+# - TIME ZONE Europe/Paris
+RUN apt-get install -yq tzdata
+RUN ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime
+RUN dpkg-reconfigure -f noninteractive tzdata
+
 ENV TZ=Europe/Paris
+# - LANG fr_FR
+RUN apt-get install -y locales locales-all
+ENV LC_ALL fr_FR.UTF-8
+ENV LANG fr_FR.UTF-8
+ENV LANGUAGE fr_FR.UTF-8
 
-# TIMEZONE
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-
-# UBUNTU PACKAGES COMPLEMENTAIRES
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 \
-    python3-pip \
-    git \
-    cron \
-    logrotate \
-    moreutils \
-    nano \
-    tzdata \
-    && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# ROTATION DES LOGS
-ADD logrotate.conf /etc/logrotate.conf
+# INSTALLATION DE CRONTAB
+RUN apt-get install -yq cron
 
 # INSTALLATION DES EXTENSIONS PYTHON
-RUN pip3 install --upgrade pip
-RUN pip3 install --no-cache-dir requests matplotlib
+RUN pip3 install --no-cache-dir requests matplotlib psycopg[binary]
 
-# INSTALLATION DE PICSOU
 WORKDIR /app
-RUN git clone https://github.com/pbillerot/picsou.git
-
-# INIT DU LOG FILE
-RUN echo "Beenux en action..." >/var/log/beenux.log
-RUN chmod 0644 /var/log/beenux.log
 
 # PLANIFICATION DES TRAVAUX
 ADD cron.crontab ./cron.crontab
@@ -49,8 +39,8 @@ ADD entrypoint.sh ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh
 ENTRYPOINT ["./entrypoint.sh"]
 
-# docker image build -t beenux:latest .
-# docker run --name beenux -p 3945:3945 -d beenux:latest
-# docker container ps
-# docker stop beenux
-# docker start beenux
+# docker image build -t beethon:latest .
+# docker exec --it beethon /bin/bash
+# docker ps
+# docker restart beethon
+

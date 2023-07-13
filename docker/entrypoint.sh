@@ -1,3 +1,5 @@
 #!/bin/bash
-cron
-tail -f /var/log/beenux.log
+date
+echo "Beethon en action..."
+cron -f
+

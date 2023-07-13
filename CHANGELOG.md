@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 -
 
+4.0.1 du 13 juillet 2023
+------------------------
+- `added` Version pour postgres exclusivement
+
 3.4.1 du 11 juillet 2023
 ----------------------
 - `fixed` correction paramètres sqlite
