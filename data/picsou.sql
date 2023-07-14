@@ -3,7 +3,6 @@
 DROP TABLE IF EXISTS "histo";
 CREATE TABLE "public"."histo" (
     "id" character varying(20) NOT NULL,
-    "name" character varying(50) NOT NULL,
     "date" character varying(10) NOT NULL,
     "open" numeric NOT NULL,
     "high" numeric NOT NULL,
@@ -61,15 +60,13 @@ DROP TABLE IF EXISTS "quotes";
 CREATE TABLE "public"."quotes" (
     "id" character varying(20),
     "date" character varying(10),
-    "open" numeric,
-    "high" numeric,
-    "low" numeric,
-    "close" numeric,
-    "adjclose" numeric,
-    "volume" integer,
-    "close1" numeric,
-    "candle" character varying(30) DEFAULT ''
+    "open" real,
+    "high" real,
+    "low" real,
+    "close" real,
+    "adjclose" real,
+    "volume" integer
 ) WITH (oids = false);
 
 
--- 2023-07-13 14:22:14.395188+02
+-- 2023-07-14 18:34:46.612257+02

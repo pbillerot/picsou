@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 -
 
+4.0.2 du 13 juillet 2023
+------------------------
+- `changed` optimisation des calculs et du stockage dans les tables - pas de redondance
+
 4.0.1 du 13 juillet 2023
 ------------------------
 - `added` Version pour postgres exclusivement

@@ -2,7 +2,7 @@
     "title": "PICSOU en action",
     "info": "Récupération des cours du jour et génération de graphiques",
     "icon_file": "picsou.jpg",
-    "qlast_histo": 390,
+    "qlast_histo": 500,
     "qlast_quotes": 120,
     "stake": 2000,
     "cost": 0.0047,
