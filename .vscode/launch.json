@@ -75,7 +75,7 @@
             "program": "picsou.py",
             "cwd": "${workspaceRoot}",
             "args": [
-                "-graph"
+                "-quotesgraph"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"
@@ -94,32 +94,6 @@
             "envFile": "${workspaceRoot}/.env"
         },
         {
-            "name": "Analyse",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry": false,
-            "program": "picsou.py",
-            "cwd": "${workspaceRoot}",
-            "args": [
-                "-analyse"
-            ],
-            "env": {},
-            "envFile": "${workspaceRoot}/.env"
-        },
-        {
-            "name": "Mail",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry": false,
-            "program": "picsou.py",
-            "cwd": "${workspaceRoot}",
-            "args": [
-                "-mail"
-            ],
-            "env": {},
-            "envFile": "${workspaceRoot}/.env"
-        },
-        {
             "name": "Batch ",
             "type": "python",
             "request": "launch",
@@ -127,19 +101,6 @@
             "program": "picsou.py",
             "cwd": "${workspaceRoot}",
             "args": [],
-            "env": {},
-            "envFile": "${workspaceRoot}/.env"
-        },
-        {
-            "name": "Crudenome install",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry": false,
-            "program": "crudenome.py",
-            "cwd": "${workspaceRoot}",
-            "args": [
-                "-install"
-            ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"
         },

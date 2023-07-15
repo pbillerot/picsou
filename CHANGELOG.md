@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 -
 
+4.0.3 du 135 juillet 2023
+------------------------
+- `changed` ajout apdate ptf_rsi à partir de quotes
+
 4.0.2 du 13 juillet 2023
 ------------------------
 - `changed` optimisation des calculs et du stockage dans les tables - pas de redondance

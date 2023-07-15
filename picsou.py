@@ -186,7 +186,7 @@ class Picsou():
                     if iline > 0 and line.find("null") == -1:
                         quote = line.split(",")
                         quotes.append(quote)
-                        drsi.append(float(quote))
+                        drsi.append(float(quote[3]))
                         close1 = close0
                         close0 = float(quote[5])
                         if iline >= 14:
