@@ -5,7 +5,11 @@ Historique des modifications
 ### À venir :
 -
 
-4.0.3 du 135 juillet 2023
+4.0.4 du 15 juillet 2023
+------------------------
+- `fixed` csv histo su pg et non pas sur sqlite
+
+4.0.3 du 15 juillet 2023
 ------------------------
 - `changed` ajout apdate ptf_rsi à partir de quotes
 

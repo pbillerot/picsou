@@ -313,7 +313,7 @@ class Picsou():
         return close0, close1, rsi, candle0, candle1, candle2
 
     def histo(self):
-        ptfs = self.crud.sql_to_dict("sqlite", """
+        ptfs = self.crud.sql_to_dict("pg", """
         SELECT * FROM ptf where ptf_enabled = '1'
         ORDER BY ptf_id
         """, {})
@@ -330,6 +330,7 @@ class Picsou():
             self.csv_to_histo(ptf, nbj, header, cookies)
 
         self.display("")
+
     def histoGraph(self):
         """
         Création du graphique des cotations historique 1 an

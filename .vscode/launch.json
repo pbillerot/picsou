@@ -88,7 +88,7 @@
             "program": "picsou.py",
             "cwd": "${workspaceRoot}",
             "args": [
-                "-graphhisto"
+                "-histograph"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"
