@@ -44,24 +44,17 @@ class Picsou():
         if self.args.test:
             print("test ok")
 
-        if self.args.histo:
-            self.histo()
-
         if self.args.quotes:
             self.quotes()
 
-        if self.args.graph:
-           self.quotesGraph()
-
-        if self.args.graphhisto:
-           self.histoGraph()
-
-        if self.args.analyse:
-           self.graphFromBoursier()
-
         if self.args.quotesgraph:
-            self.quotes()
             self.quotesGraph()
+
+        if self.args.histo:
+            self.histo()
+
+        if self.args.histograph:
+           self.histoGraph()
 
         self.display("Picsou en relache")
 
@@ -171,6 +164,7 @@ class Picsou():
         candle0 = 0
         candle1 = 0
         candle2 = 0
+        rsi = 0
         with requests.Session() as req:
             conn = self.crud.open_pg()
             try:
@@ -184,6 +178,7 @@ class Picsou():
                 lines = res.iter_lines()
                 iline = 0
                 quotes = []
+                drsi = []
                 for line in lines:
                     line = ptf["ptf_id"] + "," + str(line).replace("b'", "").replace("'", "")
                     if "null" in line:
@@ -191,8 +186,11 @@ class Picsou():
                     if iline > 0 and line.find("null") == -1:
                         quote = line.split(",")
                         quotes.append(quote)
+                        drsi.append(float(quote))
                         close1 = close0
                         close0 = float(quote[5])
+                        if iline >= 14:
+                            rsi = self.cpu.compute_rsi(drsi, 14)
                         # print line.split(",")
                     iline += 1
                 # calcul candle
@@ -312,7 +310,7 @@ class Picsou():
                 conn.commit()
             finally:
                 conn.close()
-        return close0, close1, candle0, candle1, candle2
+        return close0, close1, rsi, candle0, candle1, candle2
 
     def histo(self):
         ptfs = self.crud.sql_to_dict("sqlite", """
@@ -474,14 +472,14 @@ class Picsou():
                 # Chargement de l'historique
                 qlast = self.crud.get_config("qlast_quotes")
                 # remplissage de la table quotes - dernière quote dans self.quote
-                close, close1, candle0, candle1, candle2 = self.csv_to_quotes(ptf, qlast, header, cookies)
+                close, close1, rsi, candle0, candle1, candle2 = self.csv_to_quotes(ptf, qlast, header, cookies)
 
                 # maj quote et gain du jour dans ptf
                 cursor = conn.cursor()
                 cursor.execute("""
-                update ptf set ptf_quote = %(close)s::numeric, ptf_gain = ((%(close)s::numeric-%(close1)s::numeric)/%(close1)s::numeric)*100, ptf_candle0 = %(candle0)s, ptf_candle1 = %(candle1)s, ptf_candle2 = %(candle2)s
+                update ptf set ptf_quote = %(close)s::numeric, ptf_gain = ((%(close)s::numeric-%(close1)s::numeric)/%(close1)s::numeric)*100, ptf_candle0 = %(candle0)s, ptf_candle1 = %(candle1)s, ptf_candle2 = %(candle2)s, ptf_rsi = %(rsi)s
                 where ptf_id = %(id)s
-                """, {"id": ptf["ptf_id"], "close1": close1, "close": close, "candle0": candle0, "candle1": candle1, "candle2": candle2})
+                """, {"id": ptf["ptf_id"], "close1": close1, "close": close, "candle0": candle0, "candle1": candle1, "candle2": candle2, "rsi": rsi})
                 conn.commit()
             # maj orders quote et gain en cours
             cursor.execute("""
@@ -511,6 +509,7 @@ class Picsou():
             conn.close()
 
         self.display("")
+
     def quotesGraph(self):
         """
         Création du graphique des cotations avec candle, valeur, volume et rsi
@@ -636,7 +635,7 @@ class Picsou():
                     # SCATTER sur la dernière date
                     # https://www.python-simple.com/python-matplotlib/scatterplot.php
                     dscatter[len(dquotes)-1] = dquotes[len(dquotes)-1]+dquotes[len(dquotes)-1]*seuil_vente
-                    ax.scatter(ddate[35:], dscatter[35:], c="orange", marker="*", label="Point à +{:.1f} %".format(seuil_vente*100))
+                    ax.scatter(ddate[35:], dscatter[35:], c="orangered", marker="D", label="Point à +{:.1f} %".format(seuil_vente*100))
                 ax.legend(loc="lower left")
 
                 # CANDLES
@@ -704,8 +703,6 @@ class Picsou():
             dsignal.clear()
             dscatter.clear()
         self.pout("\n")
-
-
 
     # Récupération des graphiques sur investir.lesechos.fr
     # sur 1 an
@@ -800,13 +797,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='picsou_batch')
     # add a -c/--color option
     parser.add_argument('-test', action='store_true', default=False, help="Test environnement")
-    parser.add_argument('-sms', action='store_true', default=False, help="Envoi de SMS de recommandation")
-    parser.add_argument('-graph', action='store_true', default=False, help="Création graphique derniers cours")
-    parser.add_argument('-graphhisto', action='store_true', default=False, help="Création graphique historique cours")
     parser.add_argument('-quotes', action='store_true', default=False, help="Récupération des cours du jour")
+    parser.add_argument('-quotesgraph', action='store_true', default=False, help="Graphiques QUOTES")
     parser.add_argument('-histo', action='store_true', default=False, help="Récupération de l'historique des cours")
-    parser.add_argument('-analyse', action='store_true', default=False, help="Récupération des graphiques d'analyse")
-    parser.add_argument('-quotesgraph', action='store_true', default=False, help="Enchainement quotes graph")
+    parser.add_argument('-histograph', action='store_true', default=False, help="Graphique historique")
     # print parser.parse_args()
     if parser._get_args() == 0:
         parser.print_help()
