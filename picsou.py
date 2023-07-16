@@ -108,6 +108,7 @@ class Picsou():
         url = "https://query1.finance.yahoo.com/v7/finance/download/{}?period1={}&period2={}&interval=1d&events=history"\
         .format(ptf["ptf_id"], start_date, end_date)
         # self.display(url)
+        trend = 0.0
         with requests.Session() as req:
             conn = self.crud.open_pg()
             try:
@@ -121,6 +122,7 @@ class Picsou():
                 lines = res.iter_lines()
                 iline = 0
                 quotes = []
+                dfloat = []
                 for line in lines:
                     line = ptf["ptf_id"] + "," + str(line).replace("b'", "").replace("'", "")
                     if "null" in line:
@@ -128,7 +130,12 @@ class Picsou():
                     if iline > 0 and line.find("null") == -1:
                         quote = line.split(",")
                         quotes.append(quote)
+                        dfloat.append(float(quote[3]))
                         # print line.split(",")
+                        if iline >= 114:
+                            trend0 = self.cpu.ema(dfloat, 100)
+                            trend1 = self.cpu.ema(dfloat[:iline-14], 100)
+                            trend = (trend0-trend1)*100/trend1
                     iline += 1
                 # enregistrement dans la table HISTO
                 cursor = conn.cursor()
@@ -147,6 +154,7 @@ class Picsou():
                 conn.commit()
             finally:
                 conn.close()
+        return trend
 
     def csv_to_quotes(self, ptf, nbj, header, cookies):
         """
@@ -178,7 +186,7 @@ class Picsou():
                 lines = res.iter_lines()
                 iline = 0
                 quotes = []
-                drsi = []
+                dfloat = []
                 for line in lines:
                     line = ptf["ptf_id"] + "," + str(line).replace("b'", "").replace("'", "")
                     if "null" in line:
@@ -186,11 +194,11 @@ class Picsou():
                     if iline > 0 and line.find("null") == -1:
                         quote = line.split(",")
                         quotes.append(quote)
-                        drsi.append(float(quote[3]))
+                        dfloat.append(float(quote[3]))
                         close1 = close0
                         close0 = float(quote[5])
                         if iline >= 14:
-                            rsi = self.cpu.compute_rsi(drsi, 14)
+                            rsi = self.cpu.compute_rsi(dfloat, 14)
                         # print line.split(",")
                     iline += 1
                 # calcul candle
@@ -313,21 +321,37 @@ class Picsou():
         return close0, close1, rsi, candle0, candle1, candle2
 
     def histo(self):
-        ptfs = self.crud.sql_to_dict("pg", """
-        SELECT * FROM ptf where ptf_enabled = '1'
-        ORDER BY ptf_id
-        """, {})
-        # AND ptf_id = 'SW.PA'
-        # Partage du header et du cookie entre toutes les requêtes
-        header, crumb, cookies = self.cpu.get_crumbs_and_cookies('ACA.PA')
+        conn = self.crud.open_pg()
+        try:
+            ptfs = self.crud.sql_to_dict("pg", """
+            SELECT * FROM ptf where ptf_enabled = '1'
+            ORDER BY ptf_id
+            """, {})
+            # AND ptf_id = 'SW.PA'
+            # Partage du header et du cookie entre toutes les requêtes
+            header, crumb, cookies = self.cpu.get_crumbs_and_cookies('ACA.PA')
 
-        self.pout("Histo of")
-        for ptf in ptfs:
-            self.pout(" {}".format(ptf["ptf_id"]))
-            # Chargement de l'historique
-            nbj = self.crud.get_config("qlast_histo")
-            # remplissage de la table histo
-            self.csv_to_histo(ptf, nbj, header, cookies)
+            self.pout("Histo of")
+            for ptf in ptfs:
+                self.pout(" {}".format(ptf["ptf_id"]))
+                # Chargement de l'historique
+                nbj = self.crud.get_config("qlast_histo")
+                # remplissage de la table histo
+                trend = self.csv_to_histo(ptf, nbj, header, cookies)
+                    # maj quote et gain du jour dans ptf
+                cursor = conn.cursor()
+                cursor.execute("""
+                update ptf set ptf_trend = %(trend)s::numeric
+                where ptf_id = %(id)s
+                """, {"id": ptf["ptf_id"], "trend": trend})
+                conn.commit()
+        except BaseException as e:
+            print("quotes Error {}".format(e))
+            conn.rollback()
+        else:
+            conn.commit()
+        finally:
+            conn.close()
 
         self.display("")
 
