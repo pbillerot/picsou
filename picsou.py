@@ -434,7 +434,7 @@ class Picsou():
 
                 plt.suptitle("Historique de {} ({}) du {}".format(ptf["ptf_name"], quote["id"], datetime.datetime.now().strftime("%Y-%m-%d %H:%M")), fontsize=11, fontweight='bold')
                 if ptf["ptf_trend"] >= 0:
-                    plt.title("Tendance : {:.1f}%".format(ptf["ptf_trend"]), loc='right', pad='10', color="black", fontsize=10, backgroundcolor="lightgreen")
+                    plt.title("Tendance : {:.1f}%".format(ptf["ptf_trend"]), loc='right', pad='10', color="black", fontsize=10, backgroundcolor="paleturquoise")
                 else:
                     plt.title("Tendance : {:.1f}%".format(ptf["ptf_trend"]), loc='right', pad='10', color="black", fontsize=10, backgroundcolor="lightpink")
 
