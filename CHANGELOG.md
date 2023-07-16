@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 -
 
+4.1.1 du 16 juillet 2023
+------------------------
+- `added` ajout trend dans graph histo
+
 4.1.0 du 16 juillet 2023
 ------------------------
 - `added` ajout calcul du trend = mme100 - mme100-14j en %

@@ -432,8 +432,11 @@ class Picsou():
                 fig.set_figwidth(12)
                 fig.set_figheight(7)
 
-                plt.suptitle("Historique de {} du {}".format(quote["id"], datetime.datetime.now().strftime("%Y-%m-%d %H:%M")), fontsize=11, fontweight='bold')
-                plt.title(ptf["ptf_rem"], loc='right', pad='10', color="black", fontsize=10, backgroundcolor="yellow")
+                plt.suptitle("Historique de {} ({}) du {}".format(ptf["ptf_name"], quote["id"], datetime.datetime.now().strftime("%Y-%m-%d %H:%M")), fontsize=11, fontweight='bold')
+                if ptf["ptf_trend"] >= 0:
+                    plt.title("Tendance : {:.1f}%".format(ptf["ptf_trend"]), loc='right', pad='10', color="black", fontsize=10, backgroundcolor="lightgreen")
+                else:
+                    plt.title("Tendance : {:.1f}%".format(ptf["ptf_trend"]), loc='right', pad='10', color="black", fontsize=10, backgroundcolor="lightpink")
 
                 ax.set_ylabel('Cotation en €', fontsize=9)
                 ax.plot(ddate[100:], dmme100[100:], 'g:', label='MME100', linewidth=2)
