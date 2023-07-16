@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 -
 
+4.1.0 du 16 juillet 2023
+------------------------
+- `added` ajout calcul du trend = mme100 - mme100-14j en %
+
 4.0.4 du 15 juillet 2023
 ------------------------
 - `fixed` csv histo su pg et non pas sur sqlite
