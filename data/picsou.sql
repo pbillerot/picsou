@@ -34,9 +34,10 @@ CREATE TABLE "public"."orders" (
     "orders_sell_gain" numeric DEFAULT '0',
     "orders_sell_gainp" numeric DEFAULT '0',
     "orders_rem" character varying(200) DEFAULT '',
-    CONSTRAINT "orders_orders_id" PRIMARY KEY ("orders_id")
+    PRIMARY KEY ("orders_id")
 ) WITH (oids = false);
-
+ALTER TABLE orders
+ALTER COLUMN orders_id ADD GENERATED ALWAYS AS IDENTITY
 
 DROP TABLE IF EXISTS "ptf";
 CREATE TABLE "public"."ptf" (

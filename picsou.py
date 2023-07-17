@@ -560,9 +560,9 @@ class Picsou():
         FROM ptf LEFT OUTER JOIN orders ON orders_ptf_id = ptf_id
         and orders_order = 'buy' and (orders_sell_time is null or orders_sell_time = '')
         WHERE ptf_enabled = 1
+        --and ptf_id = 'CRH.L'
         ORDER BY ptf_id
         """, {})
-        # and ptf_id = 'SW.PA'
         optimum = {}
         seuil = {}
         border = False
@@ -657,13 +657,18 @@ class Picsou():
                 ax.tick_params(axis="y", labelsize=8)
                 # SEUIL si achat
                 if border:
-                    ax.plot(ddate[35:], dseuil[35:], 'g:', label='Seuil rentabilité', linewidth=2)
-                    ax.plot(ddate[35:], doptimum[35:], 'g-', label="Seuil vente {:.1f} %".format(seuil_vente*100), linewidth=2)
+                    ione = len(dseuil[35:]) - dseuil[35:].count(None)
+                    if ione > 1:
+                        ax.plot(ddate[35:], doptimum[35:], 'g-', label="Seuil vente {:.1f} %".format(seuil_vente*100), linewidth=2)
+                        ax.plot(ddate[35:], dseuil[35:], 'g:', label='Seuil rentabilité', linewidth=2)
+                    else:
+                        ax.scatter(ddate[35:], doptimum[35:], c="g", marker="^", label="Seuil vente {:.1f} %".format(seuil_vente*100))
+                        ax.scatter(ddate[35:], dseuil[35:], c="g", marker="v", label='Seuil rentabilité')
                 else:
                     # SCATTER sur la dernière date
                     # https://www.python-simple.com/python-matplotlib/scatterplot.php
                     dscatter[len(dquotes)-1] = dquotes[len(dquotes)-1]+dquotes[len(dquotes)-1]*seuil_vente
-                    ax.scatter(ddate[35:], dscatter[35:], c="orangered", marker="D", label="Point à +{:.1f} %".format(seuil_vente*100))
+                    ax.scatter(ddate[35:], dscatter[35:], c="g", marker="^", label="Point à +{:.1f} %".format(seuil_vente*100))
                 ax.legend(loc="lower left")
 
                 # CANDLES

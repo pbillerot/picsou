@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 -
 
+4.1.2 du 16 juillet 2023
+------------------------
+- `fixed` plot remplacé par scatter pour les seuils si une seule journée d'achat
+
 4.1.1 du 16 juillet 2023
 ------------------------
 - `added` ajout trend dans graph histo
