@@ -294,8 +294,8 @@ class Picsou():
                     # poussée haussiere bleu > rouge
                     if clo_1 > ope_1 and ope_0 > clo_0 \
                         and ope_0 > clo_1 \
-                        and clo_0 > ope_1 \
-                        and clo_0 < clo_1 - (clo_1 - ope_1)/2 \
+                        and clo_0 < clo_1 \
+                        and clo_0 > ope_1 + (ope_1 - ope_1)/2 \
                         and (clo_1 - ope_1) > (ope_0 - clo_0 ) \
                             :
                         candle = "poussee_haussiere"
@@ -726,6 +726,8 @@ class Picsou():
                 plt.subplots_adjust(left=0.06, bottom=0.1, right=0.93, top=0.90, wspace=None, hspace=None)
 
                 plt.xticks(ddate[35:], dlabelx[35:])
+
+                # affichage des candle 0 1 2
 
                 # Création du PNG
                 # Recherche du fichier qui peut être classé dans un sous répertoire
