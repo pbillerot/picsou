@@ -238,32 +238,34 @@ class Picsou():
                     # candle
                     if quote[0] == 'STMPA.PA' and quote[1] == '2023-07-14':
                         pass
-                    if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 and ope_1 > clo_2 and ope_1 > ope_0 \
-                        and (ope_1-clo_1)/(max_1-min_1) > 0.05:
+                    # étoîle du soir + + -
+                    if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 \
+                        and ope_1 > clo_2 and ope_1 > ope_0 :
                         candle = "etoile_du_soir"
-                    # étoîle du matin
-                    if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 > ope_0 and clo_1 > ope_2 and ope_1 < clo_0 \
-                        and (ope_1-clo_1)/(max_1-min_1) > 0.05:
+                    # étoîle du matin - - +
+                    if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 > ope_0 \
+                        and ope_1 < clo_2 and ope_1 < ope_0 :
                         candle = "etoile_du_matin"
-                    # bébé abandonné haussier
-                    if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 and ope_1 > clo_2 and ope_1 > ope_0 \
-                        and (ope_1-clo_1)/(max_1-min_1) < 0.05:
-                        candle = "bebe_abandonne_baissier"
-                    # bébé abandonné baissier
-                    if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 > ope_0 and clo_1 > ope_2 and ope_1 < clo_0 \
-                        and (ope_1-clo_1)/(max_1-min_1) < 0.05:
-                        candle = "bebe_abandonne_haussier"
-                    # avalement haussier
+                    # # bébé abandonné haussier
+                    # if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 and ope_1 > clo_2 \
+                    #     and ope_1 > ope_0 \
+                    #     and (ope_1-clo_1)/(max_1-min_1) < 0.05:
+                    #     candle = "bebe_abandonne_baissier"
+                    # # bébé abandonné baissier
+                    # if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 > ope_0 and clo_1 > ope_2 and ope_1 < clo_0 \
+                    #     and (ope_1-clo_1)/(max_1-min_1) < 0.05:
+                    #     candle = "bebe_abandonne_haussier"
+                    # avalement haussier  bleu rouge
                     if clo_1 < ope_1 and clo_0 > ope_0 and ope_0 < clo_1 and clo_0 > ope_1:
                         candle = "avalement_haussier"
-                    # avalement baissier
+                    # avalement baissier rouge bleu
                     if clo_1 > ope_1 and clo_0 < ope_0 and clo_0 < ope_1 and ope_0 > clo_1:
                         candle = "avalement_baissier"
-                    # harami haussier
-                    if clo_1 < ope_1 and clo_0 > ope_0 and clo_0 < ope_1 and ope_0 > clo_1:
+                    # harami haussier bleu rouge
+                    if ope_1 < clo_1 and clo_0 > ope_0 and clo_0 < ope_1 and ope_0 > clo_1:
                         candle = "harami_haussier"
-                    # harami baissier
-                    if clo_1 > ope_1 and clo_0 < ope_0 and ope_0 > clo_1 and clo_0 < ope_1:
+                    # harami baissier rouge bleu
+                    if clo_1 > ope_1 and clo_0 > ope_0 and ope_0 > ope_1 and clo_0 < clo_1:
                         candle = "harami_baissier"
                     # les 3 soldats bleus
                     if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 > ope_0 \
@@ -275,26 +277,26 @@ class Picsou():
                         and ope_1 < ope_2 and ope_1 > clo_2 and clo_1 < clo_2 \
                         and ope_0 < ope_1 and ope_0 > clo_1 and clo_0 < clo_1:
                         candle = "les_3_corbeaux_rouges"
-                    # poussée haussière bleu rouge
-                    if clo_1 > ope_1 and clo_0 < ope_0 \
-                        and clo_0 > ope_1 + (clo_1 - ope_1)/2 \
-                        and clo_0 < clo_1 :
+                    # poussée baissiere rouge > bleu
+                    if clo_1 > ope_1 and clo_0 > ope_0 \
+                        and clo_0 < clo_1 and clo_0 > ope_1 \
+                        and  ope_0 < ope_1 :
                         candle = "poussee_baissiere"
-                    # poussée baissière bleu < rouge
-                    if ope_1 > clo_1 and clo_0 > ope_0 \
-                        and ope_0 < clo_1 and clo_0 > clo_1 \
-                        and clo_0 < ope_1 - (ope_1 - clo_1)/2:
+                    # poussée haussiere bleu > rouge
+                    if clo_1 > ope_1 and clo_0 > ope_0 \
+                        and clo_0 > clo_1 \
+                        and ope_0 < clo_1 and ope_0 > ope_1:
                         candle = "poussee_haussiere"
-                    # pénétrante haussière
-                    if clo_1 < ope_1 and clo_0 > ope_0 \
-                        and (clo_0 - ope_0) > (ope_1 - clo_1) \
-                        and clo_0 > clo_1 + (ope_1 - clo_1)/2 :
-                        candle = "penetrante_haussiere"
-                    # pénétrante baissière
-                    if clo_1 > ope_1 and clo_0 < ope_0 \
-                        and (ope_0 - clo_0) > (clo_1 - ope_1) \
-                        and clo_0 < ope_1 + (clo_1 - ope_1)/2 :
+                    # pénétrante baissière bleu < rouge
+                    if clo_1 > ope_1 and ope_0 > clo_0 \
+                        and  ope_0 > clo_1 \
+                        and  clo_0 < clo_1 and clo_0 > ope_1:
                         candle = "penetrante_baissiere"
+                    # pénétrante haussière rouge > bleu
+                    if clo_1 < ope_1 and clo_0 > ope_0 \
+                        and clo_0 < clo_1 and clo_0 > ope_1 \
+                        and ope_0 < ope_1 :
+                        candle = "penetrante_haussiere"
                     # rotation des candles
                     candle2 = candle1
                     candle1 = candle0
