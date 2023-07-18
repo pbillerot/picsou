@@ -579,7 +579,7 @@ class Picsou():
         FROM ptf LEFT OUTER JOIN orders ON orders_ptf_id = ptf_id
         and orders_order = 'buy' and (orders_sell_time is null or orders_sell_time = '')
         WHERE ptf_enabled = 1
-        --and ptf_id = 'CRH.L'
+        --and ptf_id = 'STMPA.PA'
         ORDER BY ptf_id
         """, {})
         optimum = {}
@@ -726,8 +726,6 @@ class Picsou():
                 plt.subplots_adjust(left=0.06, bottom=0.1, right=0.93, top=0.90, wspace=None, hspace=None)
 
                 plt.xticks(ddate[35:], dlabelx[35:])
-
-                # affichage des candle 0 1 2
 
                 # Création du PNG
                 # Recherche du fichier qui peut être classé dans un sous répertoire
