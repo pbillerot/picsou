@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 -
 
+4.1.4 du 17 juillet 2023
+------------------------
+- `changed` bougies sansFlyiers
+
 4.1.3 du 17 juillet 2023
 ------------------------
 - `fixed` correction des chandeliers

@@ -58,7 +58,7 @@ class Picsou():
 
         self.display("Picsou en relache")
 
-    def csv_to_histo_old(self, ptf, nbj):
+    def csv_to_histor(self, ptf, nbj):
         """
         Récupération de l'historique via l'api alphavantage
         https://www.alphavantage.co/documentation/
@@ -67,21 +67,31 @@ class Picsou():
         timestamp,open,high,low,close,adjusted_close,volume,dividend_amount,split_coefficient
         2023-07-11,96.56,97.56,95.92,97.22,97.22,113607,0.0000,1.0
         """
+        trend = 0.0
         url = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&outputsize=full&datatype=csv&symbol={}&apikey={}".format(ptf["ptf_id"], self.crud.get_config("apikey"))
         with requests.get(url, stream=True) as r:
             quotes = []
+            dfloat = []
             conn = self.crud.open_pg()
             try:
                 lines = (line.decode('utf-8') for line in r.iter_lines())
                 start = True
+                iline = 0
                 for row in csv.reader(lines):
-                    if start:
+                    if start: # saut de l'entête
                         start = False
                         continue
                     record = [ptf["ptf_id"], row[0], row[1], row[2], row[3], row[4], row[5], row[6]]
                     quotes.append(record)
+                    dfloat.append(float(row[4]))
+                    # print line.split(",")
+                    if iline >= 114:
+                        trend0 = self.cpu.ema(dfloat, 100)
+                        trend1 = self.cpu.ema(dfloat[:iline-14], 100)
+                        trend = (trend0-trend1)*100/trend1
+                    iline = iline + 1
                 cursor = conn.cursor()
-                cursor.execute("DELETE FROM HISTO WHERE id = %s", [ptf["ptf_id"]])
+                cursor.execute("DELETE FROM HISTOR WHERE id = %s", [ptf["ptf_id"]])
                 cursor.executemany("""INSERT INTO HISTO
                     (id, date, open, high, low, close, adjclose, volume)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""", quotes)
@@ -96,6 +106,8 @@ class Picsou():
                 conn.commit()
             finally:
                 conn.close()
+
+        return trend
 
     def csv_to_histo(self, ptf, nbj, header, cookies):
         """
@@ -283,11 +295,11 @@ class Picsou():
                         and ope_0 < ope_1 and ope_0 > clo_1 and clo_0 < clo_1 \
                             :
                         candle = "les_3_corbeaux_rouges"
-                    # poussée baissiere rouge > bleu &
+                    # poussée baissiere rouge > bleu
                     if ope_1 > clo_1 and clo_0 > ope_0 \
                         and clo_0 > clo_1 \
                         and clo_0 < ope_1 - (ope_1 - clo_1)/2 \
-                        and ope_0 < clo1_1 \
+                        and ope_0 < clo_1 \
                         and (ope_1 - clo_1) > (clo_0 - ope_0 ) \
                             :
                         candle = "poussee_baissiere"
@@ -295,7 +307,7 @@ class Picsou():
                     if clo_1 > ope_1 and ope_0 > clo_0 \
                         and ope_0 > clo_1 \
                         and clo_0 < clo_1 \
-                        and clo_0 > ope_1 + (ope_1 - ope_1)/2 \
+                        and clo_0 > ope_1 + (clo_1 - ope_1)/2 \
                         and (clo_1 - ope_1) > (ope_0 - clo_0 ) \
                             :
                         candle = "poussee_haussiere"
@@ -357,7 +369,8 @@ class Picsou():
                 nbj = self.crud.get_config("qlast_histo")
                 # remplissage de la table histo
                 trend = self.csv_to_histo(ptf, nbj, header, cookies)
-                    # maj quote et gain du jour dans ptf
+                #trend = self.csv_to_histor(ptf, nbj)
+                # maj quote et gain du jour dans ptf
                 cursor = conn.cursor()
                 cursor.execute("""
                 update ptf set ptf_trend = %(trend)s::numeric
@@ -507,7 +520,7 @@ class Picsou():
         try:
             ptfs = self.crud.sql_to_dict("pg", """
             SELECT * FROM ptf where ptf_enabled = '1'
-            -- AND ptf_id = 'AI.PA'
+            --AND ptf_id = 'ITX.MC'
             ORDER BY ptf_id
             """, {})
             # Partage du header et du cookie entre toutes les requêtes
@@ -579,7 +592,7 @@ class Picsou():
         FROM ptf LEFT OUTER JOIN orders ON orders_ptf_id = ptf_id
         and orders_order = 'buy' and (orders_sell_time is null or orders_sell_time = '')
         WHERE ptf_enabled = 1
-        --and ptf_id = 'STMPA.PA'
+        --and ptf_id = 'ITX.MC'
         ORDER BY ptf_id
         """, {})
         optimum = {}
@@ -692,7 +705,7 @@ class Picsou():
 
                 # CANDLES
                 positions = list(range(0, len(ddate[35:])))
-                ax4 = ax.boxplot(candles[35:], positions=positions, patch_artist=True, whis=1)
+                ax4 = ax.boxplot(candles[35:], positions=positions, patch_artist=True, whis=1, showfliers=False)
                 for patch, color in zip(ax4['boxes'], dcolors[35:]):
                      patch.set_facecolor(color)
 
