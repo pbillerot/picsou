@@ -256,10 +256,12 @@ class Picsou():
                     #     and (ope_1-clo_1)/(max_1-min_1) < 0.05:
                     #     candle = "bebe_abandonne_haussier"
                     # avalement haussier  bleu rouge
-                    if clo_1 < ope_1 and clo_0 > ope_0 and ope_0 < clo_1 and clo_0 > ope_1:
+                    if ope_1 > clo_1 and clo_0 > ope_0 \
+                        and ope_0 < clo_1 and clo_0 > ope_1:
                         candle = "avalement_haussier"
                     # avalement baissier rouge bleu
-                    if clo_1 > ope_1 and clo_0 < ope_0 and clo_0 < ope_1 and ope_0 > clo_1:
+                    if clo_1 > ope_1 and ope_0 < clo_0 \
+                        and clo_0 < ope_1 and ope_0 > clo_1:
                         candle = "avalement_baissier"
                     # harami haussier bleu rouge
                     if ope_1 < clo_1 and clo_0 > ope_0 and clo_0 < ope_1 and ope_0 > clo_1:
@@ -490,9 +492,9 @@ class Picsou():
         try:
             ptfs = self.crud.sql_to_dict("pg", """
             SELECT * FROM ptf where ptf_enabled = '1'
+            AND ptf_id = 'AI.PA'
             ORDER BY ptf_id
             """, {})
-            # AND ptf_id = 'SW.PA'
             # Partage du header et du cookie entre toutes les requêtes
             header, crumb, cookies = self.cpu.get_crumbs_and_cookies('ACA.PA')
 
