@@ -492,7 +492,7 @@ class Picsou():
         try:
             ptfs = self.crud.sql_to_dict("pg", """
             SELECT * FROM ptf where ptf_enabled = '1'
-            AND ptf_id = 'AI.PA'
+            -- AND ptf_id = 'AI.PA'
             ORDER BY ptf_id
             """, {})
             # Partage du header et du cookie entre toutes les requêtes
