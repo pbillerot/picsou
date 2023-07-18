@@ -257,11 +257,13 @@ class Picsou():
                     #     candle = "bebe_abandonne_haussier"
                     # avalement haussier  bleu rouge
                     if ope_1 > clo_1 and clo_0 > ope_0 \
-                        and ope_0 < clo_1 and clo_0 > ope_1:
+                        and ope_0 < clo_1 and clo_0 > ope_1 \
+                            :
                         candle = "avalement_haussier"
                     # avalement baissier rouge bleu
                     if clo_1 > ope_1 and ope_0 < clo_0 \
-                        and clo_0 < ope_1 and ope_0 > clo_1:
+                        and clo_0 < ope_1 and ope_0 > clo_1 \
+                            :
                         candle = "avalement_baissier"
                     # harami haussier bleu rouge
                     if ope_1 < clo_1 and clo_0 > ope_0 and clo_0 < ope_1 and ope_0 > clo_1:
@@ -272,32 +274,45 @@ class Picsou():
                     # les 3 soldats bleus
                     if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 > ope_0 \
                         and ope_1 < clo_2 and ope_1 > ope_2 and clo_1 > clo_2 \
-                        and ope_0 < clo_1 and ope_0 > ope_1 and clo_0 > clo_1:
+                        and ope_0 < clo_1 and ope_0 > ope_1 and clo_0 > clo_1 \
+                            :
                         candle = "les_3_soldats_bleus"
                     # les 3 corbeaux rouges
                     if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 < ope_0 \
                         and ope_1 < ope_2 and ope_1 > clo_2 and clo_1 < clo_2 \
-                        and ope_0 < ope_1 and ope_0 > clo_1 and clo_0 < clo_1:
+                        and ope_0 < ope_1 and ope_0 > clo_1 and clo_0 < clo_1 \
+                            :
                         candle = "les_3_corbeaux_rouges"
-                    # poussée baissiere rouge > bleu
-                    if clo_1 > ope_1 and clo_0 > ope_0 \
-                        and clo_0 < clo_1 and clo_0 > ope_1 \
-                        and  ope_0 < ope_1 :
+                    # poussée baissiere rouge > bleu &
+                    if ope_1 > clo_1 and clo_0 > ope_0 \
+                        and clo_0 > clo_1 \
+                        and clo_0 < ope_1 - (ope_1 - clo_1)/2 \
+                        and ope_0 < clo1_1 \
+                        and (ope_1 - clo_1) > (clo_0 - ope_0 ) \
+                            :
                         candle = "poussee_baissiere"
                     # poussée haussiere bleu > rouge
-                    if clo_1 > ope_1 and clo_0 > ope_0 \
-                        and clo_0 > clo_1 \
-                        and ope_0 < clo_1 and ope_0 > ope_1:
+                    if clo_1 > ope_1 and ope_0 > clo_0 \
+                        and ope_0 > clo_1 \
+                        and clo_0 > ope_1 \
+                        and clo_0 < clo_1 - (clo_1 - ope_1)/2 \
+                        and (clo_1 - ope_1) > (ope_0 - clo_0 ) \
+                            :
                         candle = "poussee_haussiere"
                     # pénétrante baissière bleu < rouge
                     if clo_1 > ope_1 and ope_0 > clo_0 \
-                        and  ope_0 > clo_1 \
-                        and  clo_0 < clo_1 and clo_0 > ope_1:
+                        and ope_0 > clo_1 \
+                        and clo_0 < clo_1 \
+                        and clo_0 > ope_1 + (clo_1 - ope_1)/2 \
+                        :
                         candle = "penetrante_baissiere"
                     # pénétrante haussière rouge > bleu
-                    if clo_1 < ope_1 and clo_0 > ope_0 \
-                        and clo_0 < clo_1 and clo_0 > ope_1 \
-                        and ope_0 < ope_1 :
+                    # https://www.centralcharts.com/fr/gm/1-apprendre/7-analyse-technique/28-chandeliers-japonais/548-chandeliers-japonais-penetrante-haussiere
+                    if ope_1 < clo_1 and clo_0 > ope_0 \
+                        and clo_0 < ope_1 and clo_0 > clo_1 + (ope_1 - clo_1)/2 \
+                        and ope_0 < ope_1 \
+                        and (clo_1 - ope_1) > (ope_0 - clo_0 ) \
+                            :
                         candle = "penetrante_haussiere"
                     # rotation des candles
                     candle2 = candle1
