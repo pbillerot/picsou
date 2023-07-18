@@ -255,13 +255,13 @@ class Picsou():
                     # if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 > ope_0 and clo_1 > ope_2 and ope_1 < clo_0 \
                     #     and (ope_1-clo_1)/(max_1-min_1) < 0.05:
                     #     candle = "bebe_abandonne_haussier"
-                    # avalement haussier  bleu rouge
+                    # avalement haussier  rouge bleu
                     if ope_1 > clo_1 and clo_0 > ope_0 \
                         and ope_0 < clo_1 and clo_0 > ope_1 \
                             :
                         candle = "avalement_haussier"
-                    # avalement baissier rouge bleu
-                    if clo_1 > ope_1 and ope_0 < clo_0 \
+                    # avalement baissier bleu rouge
+                    if clo_1 > ope_1 and ope_0 > clo_0 \
                         and clo_0 < ope_1 and ope_0 > clo_1 \
                             :
                         candle = "avalement_baissier"
