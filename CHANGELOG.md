@@ -5,6 +5,11 @@ Historique des modifications
 ### À venir :
 -
 
+4.2.0 du 19 juillet 2023
+------------------------
+- `added` erreur avec n° ligne du source
+- `changed` load histo et quotes dans table HISTONEW et QUOTESNEW puis fusion dans HIST et QUOTES
+
 4.1.4 du 17 juillet 2023
 ------------------------
 - `changed` bougies sansFlyiers

@@ -12,6 +12,7 @@ import glob
 import re
 import random
 import decimal
+import traceback
 # pip install requets
 import requests
 # pip install matplotlib
@@ -58,6 +59,171 @@ class Picsou():
 
         self.display("Picsou en relache")
 
+    def compute_quotes(self, ptf, table_quotes):
+        """
+        Calcul RSI et CANDLE(S)
+        """
+        close0 = 0
+        close1 = 0
+        candle0 = 0
+        candle1 = 0
+        candle2 = 0
+        rsi = 0
+        trend = 0
+        conn = self.crud.open_pg()
+        try:
+            if table_quotes == "QUOTES":
+                quotes = self.crud.sql_to_dict("pg", """
+                SELECT * FROM QUOTES where id = %(id)s order by id ,date
+                """, {"id": ptf["ptf_id"]})
+            else:
+                quotes = self.crud.sql_to_dict("pg", """
+                SELECT * FROM HISTO where id = %(id)s order by id ,date
+                """, {"id": ptf["ptf_id"]})
+
+            dfloat = []
+            iquote = 0
+            ope_0 = 0
+            ope_1 = 0
+            ope_2 = 0
+            max_0 = 0
+            max_1 = 0
+            max_2 = 0
+            min_0 = 0
+            min_1 = 0
+            min_2 = 0
+            clo_0 = 0
+            clo_1 = 0
+            clo_2 = 0
+            iquote = 0
+            dfloat = []
+            for quote in quotes:
+                close1 = close0
+                close0 = float(quote["close"])
+                dfloat.append(close0)
+                if iquote >= 14:
+                    rsi = self.cpu.compute_rsi(dfloat, 14)
+                if iquote >= 114:
+                    trend0 = self.cpu.ema(dfloat, 100)
+                    trend1 = self.cpu.ema(dfloat[:iquote-14], 100)
+                    trend = (trend0-trend1)*100/trend1
+
+                # Traitement des chandeliers
+                #           2     3     4    5      6         7       8       9    10    11      12
+                # id, date, open, high, low, close, adjclose, volume, close1, rsi, macd, signal, candle
+                # étoîle du soir
+                candle = ""
+                # rotation
+                ope_2 = ope_1
+                ope_1 = ope_0
+                max_2 = max_1
+                max_1 = max_0
+                min_2 = min_1
+                min_1 = min_0
+                clo_2 = clo_1
+                clo_1 = clo_0
+                # valorisation
+                ope_0 = float(quote["open"])
+                max_0 = float(quote["high"])
+                min_0 = float(quote["low"])
+                clo_0 = float(quote["close"])
+                # candle
+                if quote["id"] == 'STMPA.PA' and quote["date"] == '2023-07-14':
+                    pass
+                # étoîle du soir + + -
+                if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 \
+                    and ope_1 > clo_2 and ope_1 > ope_0 :
+                    candle = "etoile_du_soir"
+                # étoîle du matin - - +
+                if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 > ope_0 \
+                    and ope_1 < clo_2 and ope_1 < ope_0 :
+                    candle = "etoile_du_matin"
+                # # bébé abandonné haussier
+                # if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 and ope_1 > clo_2 \
+                #     and ope_1 > ope_0 \
+                #     and (ope_1-clo_1)/(max_1-min_1) < 0.05:
+                #     candle = "bebe_abandonne_baissier"
+                # # bébé abandonné baissier
+                # if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 > ope_0 and clo_1 > ope_2 and ope_1 < clo_0 \
+                #     and (ope_1-clo_1)/(max_1-min_1) < 0.05:
+                #     candle = "bebe_abandonne_haussier"
+                # avalement haussier  rouge bleu
+                if ope_1 > clo_1 and clo_0 > ope_0 \
+                    and ope_0 < clo_1 and clo_0 > ope_1 \
+                        :
+                    candle = "avalement_haussier"
+                # avalement baissier bleu rouge
+                if clo_1 > ope_1 and ope_0 > clo_0 \
+                    and clo_0 < ope_1 and ope_0 > clo_1 \
+                        :
+                    candle = "avalement_baissier"
+                # harami haussier bleu rouge
+                if ope_1 < clo_1 and clo_0 > ope_0 and clo_0 < ope_1 and ope_0 > clo_1:
+                    candle = "harami_haussier"
+                # harami baissier rouge bleu
+                if clo_1 > ope_1 and clo_0 > ope_0 and ope_0 > ope_1 and clo_0 < clo_1:
+                    candle = "harami_baissier"
+                # les 3 soldats bleus
+                if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 > ope_0 \
+                    and ope_1 < clo_2 and ope_1 > ope_2 and clo_1 > clo_2 \
+                    and ope_0 < clo_1 and ope_0 > ope_1 and clo_0 > clo_1 \
+                        :
+                    candle = "les_3_soldats_bleus"
+                # les 3 corbeaux rouges
+                if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 < ope_0 \
+                    and ope_1 < ope_2 and ope_1 > clo_2 and clo_1 < clo_2 \
+                    and ope_0 < ope_1 and ope_0 > clo_1 and clo_0 < clo_1 \
+                        :
+                    candle = "les_3_corbeaux_rouges"
+                # poussée baissiere rouge > bleu
+                if ope_1 > clo_1 and clo_0 > ope_0 \
+                    and clo_0 > clo_1 \
+                    and clo_0 < ope_1 - (ope_1 - clo_1)/2 \
+                    and ope_0 < clo_1 \
+                    and (ope_1 - clo_1) > (clo_0 - ope_0 ) \
+                        :
+                    candle = "poussee_baissiere"
+                # poussée haussiere bleu > rouge
+                if clo_1 > ope_1 and ope_0 > clo_0 \
+                    and ope_0 > clo_1 \
+                    and clo_0 < clo_1 \
+                    and clo_0 > ope_1 + (clo_1 - ope_1)/2 \
+                    and (clo_1 - ope_1) > (ope_0 - clo_0 ) \
+                        :
+                    candle = "poussee_haussiere"
+                # pénétrante baissière bleu < rouge
+                if clo_1 > ope_1 and ope_0 > clo_0 \
+                    and ope_0 > clo_1 \
+                    and clo_0 < clo_1 \
+                    and clo_0 > ope_1 + (clo_1 - ope_1)/2 \
+                    :
+                    candle = "penetrante_baissiere"
+                # pénétrante haussière rouge > bleu
+                # https://www.centralcharts.com/fr/gm/1-apprendre/7-analyse-technique/28-chandeliers-japonais/548-chandeliers-japonais-penetrante-haussiere
+                if ope_1 < clo_1 and clo_0 > ope_0 \
+                    and clo_0 < ope_1 and clo_0 > clo_1 + (ope_1 - clo_1)/2 \
+                    and ope_0 < ope_1 \
+                    and (clo_1 - ope_1) > (ope_0 - clo_0 ) \
+                        :
+                    candle = "penetrante_haussiere"
+                # rotation des candles
+                candle2 = candle1
+                candle1 = candle0
+                candle0 = candle
+                # continue
+                iquote = iquote+1
+        except BaseException as e:
+            print(traceback.format_exc())
+            print("csv_to_quotes Error {}".format(e))
+            conn.rollback()
+            conn.close()
+            exit(1)
+        else:
+            conn.commit()
+        finally:
+            conn.close()
+        return close0, close1, rsi, trend, candle0, candle1, candle2
+
     def csv_to_histor(self, ptf, nbj):
         """
         Récupération de l'historique via l'api alphavantage
@@ -100,8 +266,11 @@ class Picsou():
                     print(" Erreur quotes {}".format(ptf["ptf_id"]))
                     exit(1)
             except BaseException as e:
+                print(traceback.format_exc())
                 print(" Error {}".format(e))
                 conn.rollback()
+                conn.close()
+                exit(1)
             else:
                 conn.commit()
             finally:
@@ -109,7 +278,7 @@ class Picsou():
 
         return trend
 
-    def csv_to_histo(self, ptf, nbj, header, cookies):
+    def load_histo(self, ptf, nbj, header, cookies):
         """
         Récupération de l'historique des cours des actions
         """
@@ -120,7 +289,6 @@ class Picsou():
         url = "https://query1.finance.yahoo.com/v7/finance/download/{}?period1={}&period2={}&interval=1d&events=history"\
         .format(ptf["ptf_id"], start_date, end_date)
         # self.display(url)
-        trend = 0.0
         with requests.Session() as req:
             conn = self.crud.open_pg()
             try:
@@ -134,7 +302,6 @@ class Picsou():
                 lines = res.iter_lines()
                 iline = 0
                 quotes = []
-                dfloat = []
                 for line in lines:
                     line = ptf["ptf_id"] + "," + str(line).replace("b'", "").replace("'", "")
                     if "null" in line:
@@ -142,17 +309,10 @@ class Picsou():
                     if iline > 0 and line.find("null") == -1:
                         quote = line.split(",")
                         quotes.append(quote)
-                        dfloat.append(float(quote[3]))
-                        # print line.split(",")
-                        if iline >= 114:
-                            trend0 = self.cpu.ema(dfloat, 100)
-                            trend1 = self.cpu.ema(dfloat[:iline-14], 100)
-                            trend = (trend0-trend1)*100/trend1
                     iline += 1
                 # enregistrement dans la table HISTO
                 cursor = conn.cursor()
-                cursor.execute("DELETE FROM HISTO WHERE id = %s", [ptf["ptf_id"]])
-                cursor.executemany("""INSERT INTO HISTO
+                cursor.executemany("""INSERT INTO HISTONEW
                     (id, date, open, high, low, close, adjclose, volume)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""", quotes)
                 conn.commit()
@@ -160,15 +320,17 @@ class Picsou():
                     print(" Erreur quotes {}".format(ptf["ptf_id"]))
                     exit(1)
             except BaseException as e:
+                print(traceback.format_exc())
                 print("csv_to_histo Error {}".format(e))
                 conn.rollback()
+                conn.close()
+                exit(1)
             else:
                 conn.commit()
             finally:
                 conn.close()
-        return trend
 
-    def csv_to_quotes(self, ptf, nbj, header, cookies):
+    def load_quotes(self, ptf, nbj, header, cookies):
         """
         Récupération des derniers cours d'une action
         """
@@ -179,12 +341,6 @@ class Picsou():
         url = "https://query1.finance.yahoo.com/v7/finance/download/{}?period1={}&period2={}&interval=1d&events=history"\
         .format(ptf["ptf_id"], start_date, end_date)
         # self.display(url)
-        close0 = 0
-        close1 = 0
-        candle0 = 0
-        candle1 = 0
-        candle2 = 0
-        rsi = 0
         with requests.Session() as req:
             conn = self.crud.open_pg()
             try:
@@ -198,7 +354,6 @@ class Picsou():
                 lines = res.iter_lines()
                 iline = 0
                 quotes = []
-                dfloat = []
                 for line in lines:
                     line = ptf["ptf_id"] + "," + str(line).replace("b'", "").replace("'", "")
                     if "null" in line:
@@ -206,136 +361,11 @@ class Picsou():
                     if iline > 0 and line.find("null") == -1:
                         quote = line.split(",")
                         quotes.append(quote)
-                        dfloat.append(float(quote[3]))
-                        close1 = close0
-                        close0 = float(quote[5])
-                        if iline >= 14:
-                            rsi = self.cpu.compute_rsi(dfloat, 14)
                         # print line.split(",")
                     iline += 1
-                # calcul candle
-                iquote = 0
-                ope_0 = 0
-                ope_1 = 0
-                ope_2 = 0
-                max_0 = 0
-                max_1 = 0
-                max_2 = 0
-                min_0 = 0
-                min_1 = 0
-                min_2 = 0
-                clo_0 = 0
-                clo_1 = 0
-                clo_2 = 0
-                for quote in quotes:
-                    # Traitement des chandeliers
-                    #           2     3     4    5      6         7       8       9    10    11      12
-                    # id, date, open, high, low, close, adjclose, volume, close1, rsi, macd, signal, candle
-                    # étoîle du soir
-                    candle = ""
-                    # rotation
-                    ope_2 = ope_1
-                    ope_1 = ope_0
-                    max_2 = max_1
-                    max_1 = max_0
-                    min_2 = min_1
-                    min_1 = min_0
-                    clo_2 = clo_1
-                    clo_1 = clo_0
-                    # valorisation
-                    ope_0 = float(quote[2])
-                    max_0 = float(quote[3])
-                    min_0 = float(quote[4])
-                    clo_0 = float(quote[5])
-                    # candle
-                    if quote[0] == 'STMPA.PA' and quote[1] == '2023-07-14':
-                        pass
-                    # étoîle du soir + + -
-                    if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 \
-                        and ope_1 > clo_2 and ope_1 > ope_0 :
-                        candle = "etoile_du_soir"
-                    # étoîle du matin - - +
-                    if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 > ope_0 \
-                        and ope_1 < clo_2 and ope_1 < ope_0 :
-                        candle = "etoile_du_matin"
-                    # # bébé abandonné haussier
-                    # if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 and ope_1 > clo_2 \
-                    #     and ope_1 > ope_0 \
-                    #     and (ope_1-clo_1)/(max_1-min_1) < 0.05:
-                    #     candle = "bebe_abandonne_baissier"
-                    # # bébé abandonné baissier
-                    # if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 > ope_0 and clo_1 > ope_2 and ope_1 < clo_0 \
-                    #     and (ope_1-clo_1)/(max_1-min_1) < 0.05:
-                    #     candle = "bebe_abandonne_haussier"
-                    # avalement haussier  rouge bleu
-                    if ope_1 > clo_1 and clo_0 > ope_0 \
-                        and ope_0 < clo_1 and clo_0 > ope_1 \
-                            :
-                        candle = "avalement_haussier"
-                    # avalement baissier bleu rouge
-                    if clo_1 > ope_1 and ope_0 > clo_0 \
-                        and clo_0 < ope_1 and ope_0 > clo_1 \
-                            :
-                        candle = "avalement_baissier"
-                    # harami haussier bleu rouge
-                    if ope_1 < clo_1 and clo_0 > ope_0 and clo_0 < ope_1 and ope_0 > clo_1:
-                        candle = "harami_haussier"
-                    # harami baissier rouge bleu
-                    if clo_1 > ope_1 and clo_0 > ope_0 and ope_0 > ope_1 and clo_0 < clo_1:
-                        candle = "harami_baissier"
-                    # les 3 soldats bleus
-                    if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 > ope_0 \
-                        and ope_1 < clo_2 and ope_1 > ope_2 and clo_1 > clo_2 \
-                        and ope_0 < clo_1 and ope_0 > ope_1 and clo_0 > clo_1 \
-                            :
-                        candle = "les_3_soldats_bleus"
-                    # les 3 corbeaux rouges
-                    if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 < ope_0 \
-                        and ope_1 < ope_2 and ope_1 > clo_2 and clo_1 < clo_2 \
-                        and ope_0 < ope_1 and ope_0 > clo_1 and clo_0 < clo_1 \
-                            :
-                        candle = "les_3_corbeaux_rouges"
-                    # poussée baissiere rouge > bleu
-                    if ope_1 > clo_1 and clo_0 > ope_0 \
-                        and clo_0 > clo_1 \
-                        and clo_0 < ope_1 - (ope_1 - clo_1)/2 \
-                        and ope_0 < clo_1 \
-                        and (ope_1 - clo_1) > (clo_0 - ope_0 ) \
-                            :
-                        candle = "poussee_baissiere"
-                    # poussée haussiere bleu > rouge
-                    if clo_1 > ope_1 and ope_0 > clo_0 \
-                        and ope_0 > clo_1 \
-                        and clo_0 < clo_1 \
-                        and clo_0 > ope_1 + (clo_1 - ope_1)/2 \
-                        and (clo_1 - ope_1) > (ope_0 - clo_0 ) \
-                            :
-                        candle = "poussee_haussiere"
-                    # pénétrante baissière bleu < rouge
-                    if clo_1 > ope_1 and ope_0 > clo_0 \
-                        and ope_0 > clo_1 \
-                        and clo_0 < clo_1 \
-                        and clo_0 > ope_1 + (clo_1 - ope_1)/2 \
-                        :
-                        candle = "penetrante_baissiere"
-                    # pénétrante haussière rouge > bleu
-                    # https://www.centralcharts.com/fr/gm/1-apprendre/7-analyse-technique/28-chandeliers-japonais/548-chandeliers-japonais-penetrante-haussiere
-                    if ope_1 < clo_1 and clo_0 > ope_0 \
-                        and clo_0 < ope_1 and clo_0 > clo_1 + (ope_1 - clo_1)/2 \
-                        and ope_0 < ope_1 \
-                        and (clo_1 - ope_1) > (ope_0 - clo_0 ) \
-                            :
-                        candle = "penetrante_haussiere"
-                    # rotation des candles
-                    candle2 = candle1
-                    candle1 = candle0
-                    candle0 = candle
-                    # continue
-                    iquote = iquote+1
                 # enregistrement dans QUOTES
                 cursor = conn.cursor()
-                cursor.execute("DELETE FROM QUOTES WHERE id = %s", [ptf["ptf_id"]])
-                cursor.executemany("""INSERT INTO QUOTES
+                cursor.executemany("""INSERT INTO QUOTESNEW
                     (id, date, open, high, low, close, adjclose, volume)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""", quotes)
                 conn.commit()
@@ -343,13 +373,14 @@ class Picsou():
                     print(" Erreur quotes {}".format(ptf["ptf_id"]))
                     exit(1)
             except BaseException as e:
-                print("csv_to_quotes Error {}".format(e))
+                print(traceback.format_exc())
                 conn.rollback()
+                conn.close()
+                exit(1)
             else:
                 conn.commit()
             finally:
                 conn.close()
-        return close0, close1, rsi, candle0, candle1, candle2
 
     def histo(self):
         conn = self.crud.open_pg()
@@ -362,24 +393,43 @@ class Picsou():
             # Partage du header et du cookie entre toutes les requêtes
             header, crumb, cookies = self.cpu.get_crumbs_and_cookies('ACA.PA')
 
+            # Suppression des records de HISTONEW
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM HISTONEW", [])
+            conn.commit()
+
             self.pout("Histo of")
+            nbj = self.crud.get_config("qlast_histo")
             for ptf in ptfs:
                 self.pout(" {}".format(ptf["ptf_id"]))
-                # Chargement de l'historique
-                nbj = self.crud.get_config("qlast_histo")
-                # remplissage de la table histo
-                trend = self.csv_to_histo(ptf, nbj, header, cookies)
-                #trend = self.csv_to_histor(ptf, nbj)
-                # maj quote et gain du jour dans ptf
+                # remplissage de la table histonew
+                self.load_histo(ptf, nbj, header, cookies)
+
+            # insertion des nouvelles cotations sans la table HISTO
+            cursor.execute("""
+            insert into histo select * from histonew ON CONFLICT DO NOTHING
+            """, {})
+            conn.commit()
+            self.display("")
+            # calcul du trend entre autres
+            self.pout("Compute Histo of")
+            for ptf in ptfs:
+                self.pout(" {}".format(ptf["ptf_id"]))
+                close, close1, rsi, trend, candle0, candle1, candle2 = self.compute_quotes(ptf, "HISTO")
+
+                # maj trend dans ptf
                 cursor = conn.cursor()
                 cursor.execute("""
-                update ptf set ptf_trend = %(trend)s::numeric
-                where ptf_id = %(id)s
+                update ptf set ptf_trend = %(trend)s where ptf_id = %(id)s
                 """, {"id": ptf["ptf_id"], "trend": trend})
                 conn.commit()
+
         except BaseException as e:
+            print(traceback.format_exc())
             print("quotes Error {}".format(e))
             conn.rollback()
+            conn.close()
+            exit(1)
         else:
             conn.commit()
         finally:
@@ -526,13 +576,29 @@ class Picsou():
             # Partage du header et du cookie entre toutes les requêtes
             header, crumb, cookies = self.cpu.get_crumbs_and_cookies('ACA.PA')
 
-            self.pout("Quote of")
+            # Suppression des records de HISTONEW
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM QUOTESNEW", [])
+            conn.commit()
+
+            self.pout("Load QuotesNew of")
             for ptf in ptfs:
                 self.pout(" {}".format(ptf["ptf_id"]))
                 # Chargement de l'historique
                 qlast = self.crud.get_config("qlast_quotes")
                 # remplissage de la table quotes - dernière quote dans self.quote
-                close, close1, rsi, candle0, candle1, candle2 = self.csv_to_quotes(ptf, qlast, header, cookies)
+                self.load_quotes(ptf, qlast, header, cookies)
+            self.display("")
+            # insertion des nouvelles cotations sans la table QUOTES
+            cursor.execute("""
+            insert into QUOTES select * from QUOTESNEW ON CONFLICT DO NOTHING
+            """, {})
+            conn.commit()
+            # calcul rsi et candle(s)
+            self.pout("Compute Quotes of")
+            for ptf in ptfs:
+                self.pout(" {}".format(ptf["ptf_id"]))
+                close, close1, rsi, trend, candle0, candle1, candle2 = self.compute_quotes(ptf, "QUOTES")
 
                 # maj quote et gain du jour dans ptf
                 cursor = conn.cursor()
@@ -561,8 +627,11 @@ class Picsou():
             """, {"cost": self.crud.get_config("cost")})
             conn.commit()
         except BaseException as e:
+            print(traceback.format_exc())
             print("quotes Error {}".format(e))
             conn.rollback()
+            conn.close()
+            exit(1)
         else:
             conn.commit()
         finally:
@@ -787,7 +856,10 @@ class Picsou():
             try:
                 response = requests.get(url, stream = True)
             except Exception as ex:
+                print(traceback.format_exc())
                 self.pout(getattr(ex, 'message', repr(ex)))
+                conn.close()
+                exit(1)
             else:
                 if response.status_code == 200:
                     path = "{}/png/ana/{}.gif".format(self.crud.get_config("data_directory"), ptf["ptf_id"])
