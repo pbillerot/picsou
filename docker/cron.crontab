@@ -18,7 +18,7 @@ CRON_TZ=Europe/Paris
 # because docker only tracks the stdout/stderr of the first process.
 
 # Picsou historique une fois par jour à 7h10
-10 7 * * 1-5 /usr/local/bin/python3 /volshare/dev/picsou/picsou.py -histo -histograph >/proc/1/fd/1 2>/proc/1/fd/2
+10 7 * * 1-5 /usr/local/bin/python3 /volshare/dev/picsou/picsou.py -histograph >/proc/1/fd/1 2>/proc/1/fd/2
 
 # Picsou Quotes et Graph du lundi au vendredi de 9h à 18h toutes les 5 minutes
 */5 9-17 * * 1-5 /usr/local/bin/python3 /volshare/dev/picsou/picsou.py -quotes -quotesgraph >/proc/1/fd/1 2>/proc/1/fd/2
