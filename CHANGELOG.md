@@ -5,6 +5,11 @@ Historique des modifications
 ### À venir :
 -
 
+4.3.0 du 19 juillet 2023
+------------------------
+- `removed` suppression tables histo et histonew
+- `changed` load cours dans quotesnew puis fusion QUOTES
+
 4.2.0 du 19 juillet 2023
 ------------------------
 - `added` erreur avec n° ligne du source

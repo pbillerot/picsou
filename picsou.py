@@ -59,7 +59,7 @@ class Picsou():
 
         self.display("Picsou en relache")
 
-    def compute_quotes(self, ptf, table_quotes):
+    def compute_quotes(self, ptf):
         """
         Calcul RSI et CANDLE(S)
         """
@@ -72,15 +72,11 @@ class Picsou():
         trend = 0
         conn = self.crud.open_pg()
         try:
-            if table_quotes == "QUOTES":
-                quotes = self.crud.sql_to_dict("pg", """
-                SELECT * FROM QUOTES where id = %(id)s order by id ,date
-                """, {"id": ptf["ptf_id"]})
-            else:
-                quotes = self.crud.sql_to_dict("pg", """
-                SELECT * FROM HISTO where id = %(id)s order by id ,date
-                """, {"id": ptf["ptf_id"]})
-
+            quotes = self.crud.sql_to_dict("pg", """
+            select * from
+            (select * from quotes where id = %(id)s order by date desc limit 120) as quota
+            order by id, date
+            """, {"id": ptf["ptf_id"]})
             dfloat = []
             iquote = 0
             ope_0 = 0
@@ -456,9 +452,9 @@ class Picsou():
         FROM ptf LEFT OUTER JOIN orders ON orders_ptf_id = ptf_id
         and orders_order = 'buy' and (orders_sell_time is null or orders_sell_time = '')
         WHERE ptf_enabled = 1
+        --and ptf_id = 'CRH.L'
         ORDER BY ptf_id
         """, {})
-        # and ptf_id = "SAN.PA"
         optimum = {}
         seuil = {}
         border = False
@@ -484,7 +480,9 @@ class Picsou():
                 seuil[ptf["ptf_id"]] = 0
 
             quotes = self.crud.sql_to_dict("pg", """
-            SELECT * FROM histo where id = %(id)s order by id ,date
+            select * from
+            (select * from quotes where id = %(id)s order by date desc limit 340) as quota
+            order by id, date
             """, {"id": ptf["ptf_id"]})
 
             dquotes = []
@@ -570,7 +568,7 @@ class Picsou():
         try:
             ptfs = self.crud.sql_to_dict("pg", """
             SELECT * FROM ptf where ptf_enabled = '1'
-            --AND ptf_id = 'ITX.MC'
+            --AND ptf_id = 'CRH.L'
             ORDER BY ptf_id
             """, {})
             # Partage du header et du cookie entre toutes les requêtes
@@ -582,12 +580,12 @@ class Picsou():
             conn.commit()
 
             self.pout("Load QuotesNew of")
+            qlast = self.crud.get_config("qlast_quotes")
             for ptf in ptfs:
                 self.pout(" {}".format(ptf["ptf_id"]))
                 # Chargement de l'historique
-                qlast = self.crud.get_config("qlast_quotes")
                 # remplissage de la table quotes - dernière quote dans self.quote
-                self.load_quotes(ptf, qlast, header, cookies)
+                self.load_quotes(ptf, 14, header, cookies)
             self.display("")
             # insertion des nouvelles cotations sans la table QUOTES
             cursor.execute("""
@@ -598,7 +596,7 @@ class Picsou():
             self.pout("Compute Quotes of")
             for ptf in ptfs:
                 self.pout(" {}".format(ptf["ptf_id"]))
-                close, close1, rsi, trend, candle0, candle1, candle2 = self.compute_quotes(ptf, "QUOTES")
+                close, close1, rsi, trend, candle0, candle1, candle2 = self.compute_quotes(ptf)
 
                 # maj quote et gain du jour dans ptf
                 cursor = conn.cursor()
@@ -655,13 +653,12 @@ class Picsou():
         seuil_vente = self.crud.get_config("seuil_vente")
         seuil_achat = self.crud.get_config("seuil_achat")
 
-        # Chargement des commentaires et du top
         ptfs = self.crud.sql_to_dict("pg", """
         SELECT ptf.*, orders.orders_order, orders.orders_cost_price, orders.orders_time
         FROM ptf LEFT OUTER JOIN orders ON orders_ptf_id = ptf_id
         and orders_order = 'buy' and (orders_sell_time is null or orders_sell_time = '')
         WHERE ptf_enabled = 1
-        --and ptf_id = 'ITX.MC'
+        --and ptf_id = 'CRH.L'
         ORDER BY ptf_id
         """, {})
         optimum = {}
@@ -689,7 +686,9 @@ class Picsou():
                 seuil[ptf["ptf_id"]] = 0
 
             quotes = self.crud.sql_to_dict("pg", """
-            SELECT * FROM quotes where id = %(id)s order by id ,date
+            select * from
+            (select * from quotes where id = %(id)s order by date desc limit 80) as quota
+            order by id, date
             """, {"id": ptf["ptf_id"]})
 
             dquotes = []
