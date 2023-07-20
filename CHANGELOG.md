@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 -
 
+4.3.1 du 19 juillet 2023
+------------------------
+- `fixed` correction import quote à zéro
+
 4.3.0 du 19 juillet 2023
 ------------------------
 - `removed` suppression tables histo et histonew

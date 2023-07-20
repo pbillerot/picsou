@@ -29,14 +29,14 @@
             "envFile": "${workspaceRoot}/.env"
         },
         {
-            "name": "Note",
+            "name": "Alphavantage",
             "type": "python",
             "request": "launch",
             "stopOnEntry": false,
             "program": "picsou.py",
             "cwd": "${workspaceRoot}",
             "args": [
-                "-note"
+                "-alphavantage"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"
