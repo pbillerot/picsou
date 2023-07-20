@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 -
 
+4.3.2 du 19 juillet 2023
+------------------------
+- `fixed` augmentation varchar des candles
+
 4.3.1 du 19 juillet 2023
 ------------------------
 - `fixed` correction import quote à zéro
