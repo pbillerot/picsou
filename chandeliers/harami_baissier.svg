@@ -8,7 +8,7 @@
    version="1.1"
    id="svg5"
    inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
-   sodipodi:docname="harami baissier.svg"
+   sodipodi:docname="harami_baissier.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -28,7 +28,7 @@
      inkscape:document-units="px"
      showgrid="true"
      inkscape:zoom="2.309375"
-     inkscape:cx="180.78484"
+     inkscape:cx="181.21786"
      inkscape:cy="136.18403"
      inkscape:window-width="1243"
      inkscape:window-height="990"
@@ -71,7 +71,7 @@
        x="8.9340582"
        y="40.792282" />
     <rect
-       style="fill:#0000ff;stroke-width:0.448491"
+       style="fill:#00ff00;stroke-width:0.448491"
        id="rect113"
        width="8.1065702"
        height="19.900213"
@@ -113,7 +113,7 @@
        x="20.80806"
        y="32.999714" />
     <rect
-       style="fill:#0000ff;stroke-width:0.289409"
+       style="fill:#00ff00;stroke-width:0.289409"
        id="rect113-19"
        width="8.1065702"
        height="8.2865686"
@@ -127,7 +127,7 @@
        x="32.67675"
        y="26.361195" />
     <rect
-       style="fill:#0000ff;stroke-width:0.44103"
+       style="fill:#00ff00;stroke-width:0.44103"
        id="rect113-8"
        width="7.9959168"
        height="19.509869"

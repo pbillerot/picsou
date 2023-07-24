@@ -8,7 +8,7 @@
    version="1.1"
    id="svg5"
    inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
-   sodipodi:docname="avalement haussier.svg"
+   sodipodi:docname="avalement_haussier.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -28,11 +28,11 @@
      inkscape:document-units="px"
      showgrid="true"
      inkscape:zoom="2.309375"
-     inkscape:cx="180.35183"
+     inkscape:cx="180.78484"
      inkscape:cy="136.18403"
      inkscape:window-width="1243"
      inkscape:window-height="990"
-     inkscape:window-x="-148"
+     inkscape:window-x="0"
      inkscape:window-y="69"
      inkscape:window-maximized="0"
      inkscape:current-layer="layer1">
@@ -85,7 +85,7 @@
        x="68.660942"
        y="7.7852716" />
     <rect
-       style="fill:#0000ff;stroke-width:0.448491"
+       style="fill:#00ff00;stroke-width:0.448491"
        id="rect113-2"
        width="8.1065702"
        height="19.900213"
@@ -113,7 +113,7 @@
        x="44.820957"
        y="36.522186" />
     <rect
-       style="fill:#0000ff;stroke-width:0.448491"
+       style="fill:#00ff00;stroke-width:0.448491"
        id="rect113-19"
        width="8.1065702"
        height="19.900213"
@@ -127,7 +127,7 @@
        x="56.651287"
        y="29.501572" />
     <rect
-       style="fill:#0000ff;stroke-width:0.301764"
+       style="fill:#00ff00;stroke-width:0.301764"
        id="rect113-8"
        width="7.9959168"
        height="9.1338291"

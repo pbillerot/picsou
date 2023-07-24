@@ -507,39 +507,39 @@ class Picsou():
                 # if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 > ope_0 and clo_1 > ope_2 and ope_1 < clo_0 \
                 #     and (ope_1-clo_1)/(max_1-min_1) < 0.05:
                 #     candle = "bebe_abandonne_haussier"
-                # avalement haussier  rouge bleu
+                # avalement haussier  rouge vert
                 if ope_1 > clo_1 and clo_0 > ope_0 \
                     and ope_0 < clo_1 and clo_0 > ope_1 \
                     and ope_2 > clo_2 \
                         :
                     candle = "avalement_haussier"
-                # avalement baissier bleu rouge
+                # avalement baissier vert rouge
                 if clo_1 > ope_1 and ope_0 > clo_0 \
                     and clo_0 < ope_1 and ope_0 > clo_1 \
                     and clo_2 > ope_2 \
                         :
                     candle = "avalement_baissier"
-                # harami haussier bleu rouge
+                # harami haussier vert rouge
                 if ope_1 < clo_1 and clo_0 > ope_0 and clo_0 < ope_1 and ope_0 > clo_1 \
                     and ope_2 > clo_2 :
                     candle = "harami_haussier"
-                # harami baissier rouge bleu
+                # harami baissier rouge vert
                 if clo_1 > ope_1 and clo_0 > ope_0 and ope_0 > ope_1 and clo_0 < clo_1 \
                     and clo_2 > ope_2 :
                     candle = "harami_baissier"
-                # les 3 soldats bleus
+                # les 3 soldats
                 if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 > ope_0 \
                     and ope_1 < clo_2 and ope_1 > ope_2 and clo_1 > clo_2 \
                     and ope_0 < clo_1 and ope_0 > ope_1 and clo_0 > clo_1 \
                         :
-                    candle = "les_3_soldats_bleus"
+                    candle = "les_3_soldats"
                 # les 3 corbeaux rouges
                 if clo_2 < ope_2 and clo_1 < ope_1 and clo_0 < ope_0 \
                     and ope_1 < ope_2 and ope_1 > clo_2 and clo_1 < clo_2 \
                     and ope_0 < ope_1 and ope_0 > clo_1 and clo_0 < clo_1 \
                         :
                     candle = "les_3_corbeaux_rouges"
-                # poussée baissiere rouge > bleu
+                # poussée baissiere rouge > vert
                 if ope_1 > clo_1 and clo_0 > ope_0 \
                     and clo_0 > clo_1 \
                     and clo_0 < ope_1 - (ope_1 - clo_1)/2 \
@@ -547,7 +547,7 @@ class Picsou():
                     and (ope_1 - clo_1) > (clo_0 - ope_0 ) \
                         :
                     candle = "poussee_baissiere"
-                # poussée haussiere bleu > rouge
+                # poussée haussiere vert > rouge
                 if clo_1 > ope_1 and ope_0 > clo_0 \
                     and ope_0 > clo_1 \
                     and clo_0 < clo_1 \
@@ -555,14 +555,14 @@ class Picsou():
                     and (clo_1 - ope_1) > (ope_0 - clo_0 ) \
                         :
                     candle = "poussee_haussiere"
-                # pénétrante baissière bleu < rouge
+                # pénétrante baissière vert < rouge
                 if clo_1 > ope_1 and ope_0 > clo_0 \
                     and ope_0 > clo_1 \
                     and clo_0 < clo_1 \
                     and clo_0 > ope_1 + (clo_1 - ope_1)/2 \
                     :
                     candle = "penetrante_baissiere"
-                # pénétrante haussière rouge > bleu
+                # pénétrante haussière rouge > vert
                 # https://www.centralcharts.com/fr/gm/1-apprendre/7-analyse-technique/28-chandeliers-japonais/548-chandeliers-japonais-penetrante-haussiere
                 if ope_1 < clo_1 and clo_0 > ope_0 \
                     and clo_0 < ope_1 and clo_0 > clo_1 + (ope_1 - clo_1)/2 \
@@ -660,7 +660,7 @@ class Picsou():
                 if quote["open"] >= quote["close"]:
                     dcolors.append("r")
                 else:
-                    dcolors.append("b")
+                    dcolors.append("g")
 
                 if border and quote["date"] >= order_date:
                         doptimum.append(optimum[quote["id"]])

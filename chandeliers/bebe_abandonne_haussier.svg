@@ -8,7 +8,7 @@
    version="1.1"
    id="svg5"
    inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
-   sodipodi:docname="bebe abandonne haussier.svg"
+   sodipodi:docname="bebe_abandonne_haussier.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -29,7 +29,7 @@
      inkscape:document-units="px"
      showgrid="true"
      inkscape:zoom="2.309375"
-     inkscape:cx="176.45467"
+     inkscape:cx="176.88769"
      inkscape:cy="136.18403"
      inkscape:window-width="1243"
      inkscape:window-height="990"
@@ -48,7 +48,7 @@
     <color-profile
        name="Ancor-Communications-Inc-26-"
        xlink:href="../../../.local/share/icc/edid-491734c94d8a1e12b83753a7c970504c.icc"
-       id="color-profile290" />
+       id="color-profile179" />
   </defs>
   <g
      inkscape:label="Calque 1"
@@ -84,7 +84,7 @@
        x="52.874485"
        y="25.189198" />
     <rect
-       style="fill:#0000ff;stroke-width:0.448491"
+       style="fill:#00ff00;stroke-width:0.448491"
        id="rect113-19"
        width="8.1065702"
        height="19.900213"

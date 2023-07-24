@@ -29,7 +29,7 @@
      inkscape:document-units="px"
      showgrid="true"
      inkscape:zoom="2.309375"
-     inkscape:cx="184.24899"
+     inkscape:cx="184.682"
      inkscape:cy="136.18403"
      inkscape:window-width="1243"
      inkscape:window-height="990"
@@ -48,7 +48,7 @@
     <color-profile
        name="Ancor-Communications-Inc-26-"
        xlink:href="../../../.local/share/icc/edid-491734c94d8a1e12b83753a7c970504c.icc"
-       id="color-profile232" />
+       id="color-profile180" />
   </defs>
   <g
      inkscape:label="Calque 1"
@@ -71,7 +71,7 @@
        y="-57.626019"
        transform="matrix(1,0,-0.00653677,-0.99997864,0,0)" />
     <rect
-       style="fill:#0000ff;stroke-width:0.481831"
+       style="fill:#00ff00;stroke-width:0.481831"
        id="rect113"
        width="8.1397924"
        height="22.875145"

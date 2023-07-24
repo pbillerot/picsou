@@ -8,7 +8,7 @@
    version="1.1"
    id="svg5"
    inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
-   sodipodi:docname="etoile du soir.svg"
+   sodipodi:docname="etoile_du_soir.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -29,11 +29,11 @@
      inkscape:document-units="px"
      showgrid="true"
      inkscape:zoom="2.309375"
-     inkscape:cx="226.25169"
-     inkscape:cy="136.18403"
-     inkscape:window-width="1243"
+     inkscape:cx="209.79702"
+     inkscape:cy="138.78214"
+     inkscape:window-width="1503"
      inkscape:window-height="990"
-     inkscape:window-x="648"
+     inkscape:window-x="388"
      inkscape:window-y="71"
      inkscape:window-maximized="0"
      inkscape:current-layer="layer1">
@@ -48,7 +48,7 @@
     <color-profile
        name="Ancor-Communications-Inc-26-"
        xlink:href="../../../.local/share/icc/edid-491734c94d8a1e12b83753a7c970504c.icc"
-       id="color-profile664" />
+       id="color-profile188" />
   </defs>
   <g
      inkscape:label="Calque 1"
@@ -121,7 +121,7 @@
        x="26.022261"
        y="34.625046" />
     <rect
-       style="fill:#0000ff;stroke-width:0.425113"
+       style="fill:#00ff00;stroke-width:0.425113"
        id="rect113-19"
        width="8.1065702"
        height="17.879629"
@@ -135,7 +135,7 @@
        x="14.200832"
        y="50.903263" />
     <rect
-       style="fill:#0000ff;stroke-width:0.301764"
+       style="fill:#00ff00;stroke-width:0.301764"
        id="rect113-8"
        width="7.9959168"
        height="9.1338291"
@@ -149,7 +149,7 @@
        x="37.984882"
        y="14.552563" />
     <rect
-       style="fill:#0000ff;stroke-width:0.325629"
+       style="fill:#00ff00;stroke-width:0.325629"
        id="rect113-1"
        width="8.1065702"
        height="10.490499"
