@@ -519,12 +519,12 @@ class Picsou():
                     and clo_2 > ope_2 \
                         :
                     candle = "avalement_baissier"
-                # harami haussier vert rouge
-                if ope_1 < clo_1 and clo_0 > ope_0 and clo_0 < ope_1 and ope_0 > clo_1 \
+                # harami haussier rouge2 rouge1 vert0
+                if ope_1 > clo_1 and clo_0 > ope_0 and clo_0 < ope_1 and ope_0 > clo_1 \
                     and ope_2 > clo_2 :
                     candle = "harami_haussier"
-                # harami baissier rouge vert
-                if clo_1 > ope_1 and clo_0 > ope_0 and ope_0 > ope_1 and clo_0 < clo_1 \
+                # harami baissier vert2 vert1 rouge0 rouge
+                if clo_1 > ope_1 and ope_0 > clo_0 and clo_0 > ope_1 and ope_0 < clo_1 \
                     and clo_2 > ope_2 :
                     candle = "harami_baissier"
                 # les 3 soldats
