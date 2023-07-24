@@ -17,8 +17,8 @@ CRON_TZ=Europe/Paris
 # There is one problem left, which is that the output of those jobs don't show up in the docker logs,
 # because docker only tracks the stdout/stderr of the first process.
 
-# Picsou Graph historique du lundi au vendredi de 9h à 18h toutes les 30 minutes
-*/30 9-17 * * 1-5 /usr/local/bin/python3 /volshare/dev/picsou/picsou.py -histograph >/proc/1/fd/1 2>/proc/1/fd/2
+# Picsou Graph historique du lundi au vendredi de 9h à 18h toutes les 29 minutes
+*/29 9-17 * * 1-5 /usr/local/bin/python3 /volshare/dev/picsou/picsou.py -histograph >/proc/1/fd/1 2>/proc/1/fd/2
 
 # Picsou Quotes et Graph du lundi au vendredi de 9h à 18h toutes les 5 minutes
 */5 9-17 * * 1-5 /usr/local/bin/python3 /volshare/dev/picsou/picsou.py -quotes -quotesgraph >/proc/1/fd/1 2>/proc/1/fd/2
