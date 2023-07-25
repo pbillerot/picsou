@@ -5,6 +5,11 @@ Historique des modifications
 ### À venir :
 -
 
+4.4.0 du 25 juillet 2023
+------------------------
+- `added` aide MdWiki dans répertoire wiki
+- `changed` répertoire chandelier remplacé par wiki
+
 4.3.2 du 19 juillet 2023
 ------------------------
 - `fixed` augmentation varchar des candles
