@@ -956,7 +956,7 @@ if __name__ == '__main__':
     # add a -c/--color option
     parser.add_argument('-test', action='store_true', default=False, help="Test environnement")
     parser.add_argument('-alphavantage', action='store_true', default=False, help="Récupération de l'historique des cours chez Alphavantage ")
-    parser.add_argument('-histo', type=str, required=True, help="Récupération de l'historique d'une valeur")
+    parser.add_argument('-histo', type=str, help="Récupération de l'historique d'une valeur")
     parser.add_argument('-histograph', action='store_true', default=False, help="Graphique historique")
     parser.add_argument('-quotes', action='store_true', default=False, help="Récupération des cours du jour")
     parser.add_argument('-quotesgraph', action='store_true', default=False, help="Graphiques QUOTES")
