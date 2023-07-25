@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 -
 
+4.5.0 du 25 juillet 2023
+------------------------
+- `added` -histo <valeur>
+
 4.4.0 du 25 juillet 2023
 ------------------------
 - `added` aide MdWiki dans répertoire wiki

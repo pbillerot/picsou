@@ -111,6 +111,49 @@ class Picsou():
             finally:
                 conn.close()
 
+    def histo(self, quote_id):
+        """
+            Pour intégrer une nouvelle valeur
+        """
+        conn = self.crud.open_pg()
+        try:
+            ptfs = self.crud.sql_to_dict("pg", """
+            SELECT * FROM ptf where ptf_enabled = '1'
+            AND ptf_id = %s
+            ORDER BY ptf_id
+            """, [quote_id])
+            # Partage du header et du cookie entre toutes les requêtes
+            header, crumb, cookies = self.cpu.get_crumbs_and_cookies('ACA.PA')
+
+            # Suppression des records de HISTONEW
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM QUOTESNEW", [])
+            conn.commit()
+
+            self.pout("Load QuotesNew of")
+            qlast = self.crud.get_config("qlast_quotes")
+            for ptf in ptfs:
+                self.pout(" {}".format(ptf["ptf_id"]))
+                # Chargement de l'historique
+                # remplissage de la table quotes - dernière quote dans self.quote
+                self.histo_load(ptf, 500, header, cookies)
+            self.display("")
+            cursor.execute("""
+            insert into QUOTES select * from QUOTESNEW ON CONFLICT DO NOTHING
+            """, {})
+            conn.commit()
+        except BaseException as e:
+            print(traceback.format_exc())
+            conn.rollback()
+            conn.close()
+            exit(1)
+        else:
+            conn.commit()
+        finally:
+            conn.close()
+
+        self.display("")
+
     def histo_load(self, ptf, nbj, header, cookies):
         """
         Récupération de l'historique des cours des actions
@@ -145,7 +188,7 @@ class Picsou():
                     iline += 1
                 # enregistrement dans la table HISTO
                 cursor = conn.cursor()
-                cursor.executemany("""INSERT INTO HISTONEW
+                cursor.executemany("""INSERT INTO QUOTESNEW
                     (id, date, open, high, low, close, adjclose, volume)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""", quotes)
                 conn.commit()
@@ -890,6 +933,9 @@ class Picsou():
         if self.args.test:
             print("test ok")
 
+        if self.args.histo:
+            self.histo(self.args.histo)
+
         if self.args.quotes:
             self.quotes()
 
@@ -898,9 +944,6 @@ class Picsou():
 
         if self.args.alphavantage:
             self.alphavantage()
-
-        if self.args.histo:
-            self.histo()
 
         if self.args.histograph:
            self.histo_graph()
@@ -913,7 +956,7 @@ if __name__ == '__main__':
     # add a -c/--color option
     parser.add_argument('-test', action='store_true', default=False, help="Test environnement")
     parser.add_argument('-alphavantage', action='store_true', default=False, help="Récupération de l'historique des cours chez Alphavantage ")
-    parser.add_argument('-histo', action='store_true', default=False, help="Récupération de l'historique des cours")
+    parser.add_argument('-histo', type=str, required=True, help="Récupération de l'historique d'une valeur")
     parser.add_argument('-histograph', action='store_true', default=False, help="Graphique historique")
     parser.add_argument('-quotes', action='store_true', default=False, help="Récupération des cours du jour")
     parser.add_argument('-quotesgraph', action='store_true', default=False, help="Graphiques QUOTES")

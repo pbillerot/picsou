@@ -7,9 +7,14 @@
 ```shell
 sudo apt install virtualenv
 virtualenv --python=/usr/bin/python3 venv
+
+dans vscodium crtl+shift+P Venv
+
 source venv/bin/activate
 
-pip3 install pygobject matplotlib requests
+pip3 install matplotlib requests psycopg[binary]
+
+dans vscodium crtl+shift+P Venv
 
 ```
 ### Pour VSCodium

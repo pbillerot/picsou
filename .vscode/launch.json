@@ -42,19 +42,6 @@
             "envFile": "${workspaceRoot}/.env"
         },
         {
-            "name": "Histo",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry": false,
-            "program": "picsou.py",
-            "cwd": "${workspaceRoot}",
-            "args": [
-                "-histo"
-            ],
-            "env": {},
-            "envFile": "${workspaceRoot}/.env"
-        },
-        {
             "name": "Quotes",
             "type": "python",
             "request": "launch",
@@ -76,6 +63,19 @@
             "cwd": "${workspaceRoot}",
             "args": [
                 "-quotesgraph"
+            ],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },
+        {
+            "name": "Histo valeur",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "picsou.py",
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "-histo", "SOI.PA"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"
