@@ -1,7 +1,4 @@
 # Guide PICSOU
 
-[Home](home.md)
-[About](about.md)
-
-[gimmick:themechooser](Choose theme)
-[gimmick:theme](flatly)
+[Euro Stoxx 500](euro_stoxx_500.md)
+[gimmick:theme](united)

@@ -1,7 +1,8 @@
 {
     "title": "Guide PICSOU",
-    "useSideMenu": true,
+    "useSideMenu": false,
     "lineBreaks": "gfm",
     "additionalFooterText": "All content and images &copy; by Philippe Billerot - ",
-    "anchorCharacter": "#"
+    "anchorCharacter": "#",
+    "httpServer": "python3 -m http.server"
 }
