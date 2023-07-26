@@ -755,13 +755,13 @@ class Picsou():
                         ax.plot(ddate[35:], doptimum[35:], 'g-', label="Seuil vente {:.1f} %".format(seuil_vente*100), linewidth=2)
                         ax.plot(ddate[35:], dseuil[35:], 'g:', label='Seuil rentabilité', linewidth=2)
                     else:
-                        ax.scatter(ddate[35:], doptimum[35:], c="g", marker="^", label="Seuil vente {:.1f} %".format(seuil_vente*100))
-                        ax.scatter(ddate[35:], dseuil[35:], c="g", marker="v", label='Seuil rentabilité')
+                        ax.scatter(ddate[35:], doptimum[35:], c="b", marker="^", label="Seuil vente {:.1f} %".format(seuil_vente*100))
+                        ax.scatter(ddate[35:], dseuil[35:], c="b", marker="v", label='Seuil rentabilité')
                 else:
                     # SCATTER sur la dernière date
                     # https://www.python-simple.com/python-matplotlib/scatterplot.php
                     dscatter[len(dquotes)-1] = dquotes[len(dquotes)-1]+dquotes[len(dquotes)-1]*seuil_vente
-                    ax.scatter(ddate[35:], dscatter[35:], c="g", marker="^", label="Point à +{:.1f} %".format(seuil_vente*100))
+                    ax.scatter(ddate[35:], dscatter[35:], c="b", marker="^", label="Point à +{:.1f} %".format(seuil_vente*100))
                 ax.legend(loc="lower left")
 
                 # CANDLES
