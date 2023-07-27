@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 -
 
+4.6.1 du 27 juillet 2023
+------------------------
+- `fixed` calcul rsi et 3.5% mainetent sur close et non pas sur open
+
 4.6.0 du 27 juillet 2023
 ------------------------
 - `changed` histo dans table HISTO au lieu de QUOTESNEW

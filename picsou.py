@@ -698,7 +698,7 @@ class Picsou():
             iquote = 0
             for quote in quotes:
                 # chargement des données
-                dquotes.append(quote["open"])
+                dquotes.append(quote["close"])
                 candles.append([quote["low"],quote["adjclose"],quote["open"],quote["high"]])
                 if quote["open"] >= quote["close"]:
                     dcolors.append("r")
