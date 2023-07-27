@@ -127,10 +127,10 @@ class Picsou():
 
             # Suppression des records de HISTONEW
             cursor = conn.cursor()
-            cursor.execute("DELETE FROM QUOTESNEW", [])
+            cursor.execute("DELETE FROM HISTO", [])
             conn.commit()
 
-            self.pout("Load QuotesNew of")
+            self.pout("Load Histo of")
             qlast = self.crud.get_config("qlast_quotes")
             for ptf in ptfs:
                 self.pout(" {}".format(ptf["ptf_id"]))
@@ -139,7 +139,7 @@ class Picsou():
                 self.histo_load(ptf, 500, header, cookies)
             self.display("")
             cursor.execute("""
-            insert into QUOTES select * from QUOTESNEW ON CONFLICT DO NOTHING
+            insert into QUOTES select * from HISTO ON CONFLICT DO NOTHING
             """, {})
             conn.commit()
         except BaseException as e:
@@ -188,7 +188,7 @@ class Picsou():
                     iline += 1
                 # enregistrement dans la table HISTO
                 cursor = conn.cursor()
-                cursor.executemany("""INSERT INTO QUOTESNEW
+                cursor.executemany("""INSERT INTO HISTO
                     (id, date, open, high, low, close, adjclose, volume)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""", quotes)
                 conn.commit()

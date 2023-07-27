@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 -
 
+4.6.0 du 27 juillet 2023
+------------------------
+- `changed` histo dans table HISTO au lieu de QUOTESNEW
+
 4.5.0 du 25 juillet 2023
 ------------------------
 - `added` -histo <valeur>
