@@ -13,6 +13,8 @@ import re
 import random
 import decimal
 import traceback
+import re
+import urllib.request
 # pip install requets
 import requests
 # pip install matplotlib
@@ -118,8 +120,7 @@ class Picsou():
         conn = self.crud.open_pg()
         try:
             ptfs = self.crud.sql_to_dict("pg", """
-            SELECT * FROM ptf where ptf_enabled = '1'
-            AND ptf_id = %s
+            SELECT * FROM ptf where ptf_id = %s
             ORDER BY ptf_id
             """, [quote_id])
             # Partage du header et du cookie entre toutes les requêtes
@@ -908,6 +909,60 @@ class Picsou():
 
         self.pout("\n")
 
+    def extract_info_echo(self):
+        """
+            Mise à jour colonne ptf.court_terme moyen_terme avec les recommandation du site Les Echos
+            https://investir.lesechos.fr/cours/actions/ubisoft-entertain.-ubi-fr0000054470-xpar/analyse-technique
+        """
+        conn = self.crud.open_pg()
+        try:
+            ptfs = self.crud.sql_to_dict("pg", """
+                SELECT * FROM ptf where ptf_enabled = '1'
+                AND ptf_id = 'SOI.PA'
+                ORDER BY ptf_id
+                """, {})
+            self.pout("Recommandation pour")
+            for ptf in ptfs:
+                self.pout(" " + ptf["ptf_id"] + "")
+                if ptf["ptf_link"] != "":
+                    response = requests.get(ptf["ptf_link"], stream = True)
+                    if response.status_code == 200:
+                        response.raw.decode_content = True
+                        # court_terme
+                        court_terme = ""
+                        istart = response.text.find(" court terme")
+                        str = response.text[istart:istart+200]
+                        print(str)
+                        found = re.search(r' court terme.*\"\>(.*?)\<\/span\><\/div\>.*', str)
+                        court_terme = found.group(1)
+                        print(court_terme)
+                        # moyen terme
+                        moyen_terme = ""
+                        istart = response.text.find(" moyen terme")
+                        str = response.text[istart:istart+200]
+                        found = re.search(r' moyen terme.*\"\>(.*?)\<\/span\>.*', str)
+                        moyen_terme = found.group(1)
+                        print(moyen_terme)
+                        # update ptf
+                        cursor = conn.cursor()
+                        cursor.execute("""
+                        update ptf set ptf_court_terme = %(court_terme)s, ptf_moyen_terme = %(moyen_terme)s
+                        where ptf_id = %(id)s
+                        """, {"id": ptf["ptf_id"], "court_terme": court_terme, "moyen_terme": moyen_terme})
+                        conn.commit()
+
+        except BaseException as e:
+            print(traceback.format_exc())
+            conn.rollback()
+            conn.close()
+            exit(1)
+        else:
+            conn.commit()
+        finally:
+            conn.close()
+
+        self.pout("\n")
+
     def display(self, msg, with_date=True):
         """ docstring """
         if with_date==True :
@@ -932,6 +987,9 @@ class Picsou():
 
         if self.args.test:
             print("test ok")
+
+        if self.args.echo:
+            self.extract_info_echo()
 
         if self.args.histo:
             self.histo(self.args.histo)
@@ -960,6 +1018,7 @@ if __name__ == '__main__':
     parser.add_argument('-histograph', action='store_true', default=False, help="Graphique historique")
     parser.add_argument('-quotes', action='store_true', default=False, help="Récupération des cours du jour")
     parser.add_argument('-quotesgraph', action='store_true', default=False, help="Graphiques QUOTES")
+    parser.add_argument('-echo', action='store_true', default=False, help="Extraction from Echo")
     # print parser.parse_args()
     if parser._get_args() == 0:
         parser.print_help()

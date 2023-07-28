@@ -75,7 +75,7 @@
             "program": "picsou.py",
             "cwd": "${workspaceRoot}",
             "args": [
-                "-histo", "SOI.PA"
+                "-histo", "RXL.PA"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"
@@ -89,6 +89,19 @@
             "cwd": "${workspaceRoot}",
             "args": [
                 "-histograph"
+            ],
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },
+        {
+            "name": "Extract from Echo",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "picsou.py",
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "-echo"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"
