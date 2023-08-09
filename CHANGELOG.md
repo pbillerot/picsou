@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 -
 
+4.6.3 du 9 août 2023
+------------------------
+- `added` suite commentaire multiligne suppression crlf dans le png
+
 4.6.2 du 28 juillet 2023
 ------------------------
 - `fixed` histo sur valeur disabled
