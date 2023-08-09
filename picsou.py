@@ -744,7 +744,7 @@ class Picsou():
                 fig.set_figheight(7)
 
                 plt.suptitle("Cours de {} - {} - {:.2f} € du {}".format(quote["id"], ptf["ptf_name"], quote["close"], datetime.datetime.now().strftime("%Y-%m-%d %H:%M")), fontsize=11, fontweight='bold')
-                plt.title(ptf["ptf_rem"], loc='right', pad='10', color="black", fontsize=10, backgroundcolor="yellow")
+                plt.title(ptf["ptf_rem"].replace("\n", " ").replace("\r", ""), loc='right', pad='10', color="black", fontsize=10, backgroundcolor="yellow")
 
                 ax.set_ylabel('Cotation en €', fontsize=9)
                 ax.tick_params(axis="x", labelsize=8)
