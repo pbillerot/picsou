@@ -1,7 +1,6 @@
 """
     ROUTINES INDÉPENDANTES
 """
-import requests
 import numpy as np
 
 class Cpu:
@@ -11,73 +10,6 @@ class Cpu:
 
     def __init__(self):
         """ Initialisation """
-
-    def get_crumbs_and_cookies(self, stock):
-      """
-      get crumb and cookies for historical data csv download from yahoo finance
-      parameters: stock - short-handle identifier of the company
-      returns a tuple of header, crumb and cookie
-      """
-      url = 'https://finance.yahoo.com/quote/{}/history'.format(stock)
-      with requests.session():
-        header = {'Connection': 'keep-alive',
-                   'Expires': '-1',
-                   'Upgrade-Insecure-Requests': '1',
-                   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) \
-                   AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36'
-                   }
-
-        website = requests.get(url, headers=header)
-        # soup = BeautifulSoup(website.text, 'lxml')
-        # crumb = re.findall('"CrumbStore":{"crumb":"(.+?)"}', str(soup))
-
-        # return (header, crumb[0], website.cookies)
-        return (header, '', website.cookies)
-
-    def get_crumbs_and_cookies_of_url(self, url):
-      """
-      get crumb and cookies for historical data csv download from yahoo finance
-      parameters: stock - short-handle identifier of the company
-      returns a tuple of header, crumb and cookie
-      """
-      with requests.session():
-        header = {'Connection': 'keep-alive',
-                   'Expires': '-1',
-                   'Upgrade-Insecure-Requests': '1',
-                   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) \
-                   AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36'
-                   }
-
-        website = requests.get(url, headers=header)
-        return (header, '', website.cookies)
-
-    def get_content_form_url(self, url, header, cookies):
-        """
-        Obtenir le contenu d'une requête http(s)
-        """
-        content = ""
-        with requests.Session() as req:
-            conn = None
-            try:
-                res = req.get(url, headers=header, cookies=cookies)
-                content = res.content.decode("utf-8")
-            except ValueError:
-                print(" Error {} {}".format(ValueError, url))
-        return content
-
-    def get_bytes_form_url(self, url):
-        """
-        Obtenir le contenu d'une requête http(s)
-        """
-        with requests.Session() as req:
-            header = {'Connection': 'keep-alive',
-                'Expires': '-1',
-                'Upgrade-Insecure-Requests': '1',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) \
-                AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36'
-            }
-            res = req.get(url, headers=header)
-        return res.content
 
     def compute_rsi(self, data, n=14):
         deltas = np.diff(data)

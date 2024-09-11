@@ -14,9 +14,14 @@ import random
 import decimal
 import traceback
 import re
-import urllib.request
+
+# pip install yfinance
+import yfinance as yf
+import numpy as np
+
+# import urllib.request
 # pip install requets
-import requests
+# import requests
 # pip install matplotlib
 import matplotlib.pyplot as plt
 # csv
@@ -30,37 +35,38 @@ from cpu import Cpu
 class Picsou():
     """ Actualisation des cours """
 
-    def alphavantage(self):
+    def load_quotes_in_table(self, table_name, ptf_id, period):
         """
-        Chargement des 100 derniers cours alphavantage
-        ATTENTION - il faut passer à PREMIUM pour l'utiliser fréquement
+        Récupération de l'historique des cours d'une action dans une table
         """
+        # Valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
+        df = yf.download(ptf_id, period=period, progress=False)
+
         conn = self.crud.open_pg()
         try:
-            ptfs = self.crud.sql_to_dict("pg", """
-            SELECT * FROM ptf where ptf_enabled = '1'
-            --AND ptf_id = 'SW.PA'
-            ORDER BY ptf_id
-            """, {})
+            cols = 'id, date, open, high, low, close, adjclose, volume '
+            vals = []
+            for index, r in df.iterrows():
+                date_str = index.strftime("%Y-%m-%d")
+                row = [f"'{ptf_id}'", f"'{date_str}'"]
+                for x in r:
+                    row.append(f"'{str(x)}'")
+                row_str = ', '.join(row)
+                vals.append(row_str)
 
-            # Suppression des records de ALPHAVANTAGE
+            f_values = [] 
+            for v in vals:
+                f_values.append(f'({v})')
+
+            # Handle inputting NULL values
+            f_values = ', '.join(f_values) 
+            f_values = re.sub(r"('None')", "NULL", f_values)
+
+            sql = f"insert into {table_name} ({cols}) values {f_values};" 
+            # enregistrement dans la table
             cursor = conn.cursor()
-            cursor.execute("DELETE FROM ALPHAVANTAGE", [])
+            cursor.execute(sql, {})
             conn.commit()
-
-            self.pout("Alphavantage of")
-            for ptf in ptfs:
-                self.pout(" {}".format(ptf["ptf_id"]))
-                # remplissage de la table histonew
-                self.alphavantage_load(ptf)
-
-            # insertion des nouvelles cotations dans la table QUOTES
-            # cursor.execute("""
-            # insert into QUOTES select * from ALPHAVANTAGE ON CONFLICT DO NOTHING
-            # """, {})
-            # conn.commit()
-            self.display("")
-
         except BaseException as e:
             print(traceback.format_exc())
             conn.rollback()
@@ -71,47 +77,6 @@ class Picsou():
         finally:
             conn.close()
 
-        self.display("")
-
-    def alphavantage_load(self, ptf):
-        """
-        Récupération de l'historique via l'api alphavantage
-        https://www.alphavantage.co/documentation/
-        https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=IBM&apikey=demo'
-        CSV 0     1    2    3   4     5              6
-        timestamp,open,high,low,close,adjusted_close,volume,dividend_amount,split_coefficient
-        2023-07-11,96.56,97.56,95.92,97.22,97.22,113607,0.0000,1.0
-        """
-        url = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&outputsize=compact&datatype=csv&symbol={}&apikey={}".format(ptf["ptf_id"], self.crud.get_config("apikey"))
-        with requests.get(url, stream=True) as r:
-            quotes = []
-            conn = self.crud.open_pg()
-            try:
-                lines = (line.decode('utf-8') for line in r.iter_lines())
-                start = True
-                for row in csv.reader(lines):
-                    if len(row) == 0:
-                        continue
-                    print(row)
-                    if start: # saut de l'entête
-                        start = False
-                        continue
-                    record = [ptf["ptf_id"], row[0], row[1], row[2], row[3], row[4], row[5], row[6]]
-                    quotes.append(record)
-                cursor = conn.cursor()
-                cursor.executemany("""INSERT INTO ALPHAVANTAGE
-                    (id, date, open, high, low, close, adjclose, volume)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""", quotes)
-                conn.commit()
-            except BaseException as e:
-                print(traceback.format_exc())
-                conn.rollback()
-                conn.close()
-                exit(1)
-            else:
-                conn.commit()
-            finally:
-                conn.close()
 
     def histo(self, quote_id):
         """
@@ -123,10 +88,8 @@ class Picsou():
             SELECT * FROM ptf where ptf_id = %s
             ORDER BY ptf_id
             """, [quote_id])
-            # Partage du header et du cookie entre toutes les requêtes
-            header, crumb, cookies = self.cpu.get_crumbs_and_cookies('ACA.PA')
 
-            # Suppression des records de HISTONEW
+            # Suppression des records de HISTO
             cursor = conn.cursor()
             cursor.execute("DELETE FROM HISTO", [])
             conn.commit()
@@ -137,12 +100,12 @@ class Picsou():
                 self.pout(" {}".format(ptf["ptf_id"]))
                 # Chargement de l'historique
                 # remplissage de la table quotes - dernière quote dans self.quote
-                self.histo_load(ptf, 500, header, cookies)
+                # Valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
+                self.load_quotes_in_table("HISTO", ptf["ptf_id"], "1y")
             self.display("")
             cursor.execute("""
             insert into QUOTES select * from HISTO ON CONFLICT DO NOTHING
             """, {})
-            conn.commit()
         except BaseException as e:
             print(traceback.format_exc())
             conn.rollback()
@@ -154,57 +117,6 @@ class Picsou():
             conn.close()
 
         self.display("")
-
-    def histo_load(self, ptf, nbj, header, cookies):
-        """
-        Récupération de l'historique des cours des actions
-        """
-        # end_date = int(time.mktime(datetime.datetime.now().timetuple()))
-        end_date = int(time.time())
-        start_date = int(time.mktime((datetime.datetime.now() - datetime.timedelta(days=nbj)).timetuple()))
-
-        url = "https://query1.finance.yahoo.com/v7/finance/download/{}?period1={}&period2={}&interval=1d&events=history"\
-        .format(ptf["ptf_id"], start_date, end_date)
-        # self.display(url)
-        with requests.Session() as req:
-            conn = self.crud.open_pg()
-            try:
-                res = req.get(url, headers=header, cookies=cookies)
-                for block in res.iter_content(256):
-                    if b'error' in block:
-                        raise ValueError("ERREUR yahoo %s" % block)
-
-                if res.encoding is None:
-                    res.encoding = 'utf-8'
-                lines = res.iter_lines()
-                iline = 0
-                quotes = []
-                for line in lines:
-                    line = ptf["ptf_id"] + "," + str(line).replace("b'", "").replace("'", "")
-                    if "null" in line:
-                        continue
-                    if iline > 0 and line.find("null") == -1:
-                        quote = line.split(",")
-                        quotes.append(quote)
-                    iline += 1
-                # enregistrement dans la table HISTO
-                cursor = conn.cursor()
-                cursor.executemany("""INSERT INTO HISTO
-                    (id, date, open, high, low, close, adjclose, volume)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""", quotes)
-                conn.commit()
-                if len(quotes) == 0:
-                    print(" Erreur quotes {}".format(ptf["ptf_id"]))
-                    exit(1)
-            except BaseException as e:
-                print(traceback.format_exc())
-                conn.rollback()
-                conn.close()
-                exit(1)
-            else:
-                conn.commit()
-            finally:
-                conn.close()
 
     def histo_graph(self):
         """
@@ -344,10 +256,7 @@ class Picsou():
             --AND ptf_id = 'FLTR.L'
             ORDER BY ptf_id
             """, {})
-            # Partage du header et du cookie entre toutes les requêtes
-            header, crumb, cookies = self.cpu.get_crumbs_and_cookies('ACA.PA')
-
-            # Suppression des records de HISTONEW
+            # Suppression des records de QUOTESNEW
             cursor = conn.cursor()
             cursor.execute("DELETE FROM QUOTESNEW", [])
             conn.commit()
@@ -358,7 +267,8 @@ class Picsou():
                 self.pout(" {}".format(ptf["ptf_id"]))
                 # Chargement de l'historique
                 # remplissage de la table quotes - dernière quote dans self.quote
-                self.quotes_load(ptf, 14, header, cookies)
+                # Valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
+                self.load_quotes_in_table("QUOTESNEW", ptf["ptf_id"], "1mo")
             self.display("")
             # suppression de la dernière cotation pour intégrer la cotation du jour
             cursor.execute("""
@@ -413,59 +323,6 @@ class Picsou():
             conn.close()
 
         self.display("")
-
-    def quotes_load(self, ptf, nbj, header, cookies):
-        """
-        Récupération des derniers cours d'une action
-        """
-        # end_date = int(time.mktime(datetime.datetime.now().timetuple()))
-        end_date = int(time.time())
-        start_date = int(time.mktime((datetime.datetime.now() - datetime.timedelta(days=nbj)).timetuple()))
-
-        url = "https://query1.finance.yahoo.com/v7/finance/download/{}?period1={}&period2={}&interval=1d&events=history"\
-        .format(ptf["ptf_id"], start_date, end_date)
-        # self.display(url)
-        with requests.Session() as req:
-            conn = self.crud.open_pg()
-            try:
-                res = req.get(url, headers=header, cookies=cookies)
-                for block in res.iter_content(256):
-                    if b'error' in block:
-                        raise ValueError("ERREUR yahoo %s" % block)
-
-                if res.encoding is None:
-                    res.encoding = 'utf-8'
-                lines = res.iter_lines()
-                iline = 0
-                quotes = []
-                for line in lines:
-                    line = ptf["ptf_id"] + "," + str(line).replace("b'", "").replace("'", "")
-                    if "null" in line:
-                        continue
-                    if iline > 0 and line.find("null") == -1:
-                        quote = line.split(",")
-                        if float(quote[2]) > 0.0:
-                            # print(quote)
-                            quotes.append(quote)
-                    iline += 1
-                # enregistrement dans QUOTES
-                cursor = conn.cursor()
-                cursor.executemany("""INSERT INTO QUOTESNEW
-                    (id, date, open, high, low, close, adjclose, volume)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""", quotes)
-                conn.commit()
-                if len(quotes) == 0:
-                    print(" Erreur quotes {}".format(ptf["ptf_id"]))
-                    exit(1)
-            except BaseException as e:
-                print(traceback.format_exc())
-                conn.rollback()
-                conn.close()
-                exit(1)
-            else:
-                conn.commit()
-            finally:
-                conn.close()
 
     def quotes_compute(self, ptf):
         """
@@ -831,138 +688,6 @@ class Picsou():
             dscatter.clear()
         self.pout("\n")
 
-    def graph_analyse_echo(self):
-        """
-            Récupération des graphiques sur investir.lesechos.fr
-            sur 1 an
-            https://investir.lesechos.fr/charts/gif/FR0000120578.gif
-            https://investir.lesechos.fr/cours/actions/sanofi-san-fr0000120578-xpar
-        """
-
-        ptfs = self.crud.sql_to_dict("sqlite", """
-        SELECT * FROM ptf where ptf_enabled = '1' ORDER BY ptf_id
-        """, {})
-        self.pout("Graph of")
-        for ptf in ptfs:
-            self.pout(" " + ptf["ptf_id"] + "")
-            url = "https://investir.lesechos.fr/charts/gif/{}.gif".format(ptf["ptf_isin"])
-            try:
-                response = requests.get(url, stream = True)
-            except Exception as ex:
-                print(traceback.format_exc())
-                conn.close()
-                exit(1)
-            else:
-                if response.status_code == 200:
-                    path = "{}/png/ana/{}.gif".format(self.crud.get_config("data_directory"), ptf["ptf_id"])
-                    response.raw.decode_content = True
-                    with open(path,'wb') as f:
-                        shutil.copyfileobj(response.raw, f)
-                else:
-                    self.pout(" err:{}".format(response.status_code))
-
-        self.pout("\n")
-
-    def graph_from_boursier(self):
-        """
-        Récupération historique et analyse technique sur boursier.com
-        https://www.boursier.com/actions/privileges/analyse-technique/<air-liquide>-<FR0000120073>,FR.html
-        https://regex101.com/
-        https://cdn-static.boursier.com/illustrations/feeds/daybyday/at/13554120230207050050.gif
-        regexp ".*/daybyday\/.*\/(.+?).gif.*"gm
-        """
-        header, crumb, cookies = self.cpu.get_crumbs_and_cookies_of_url("https://www.boursier.com/")
-        start_date_histo = datetime.datetime.now() - datetime.timedelta(weeks=52)
-
-        ptfs = self.crud.sql_to_dict("sqlite", """
-        SELECT * FROM ptf where ptf_enabled = '1' ORDER BY ptf_id
-        """, {})
-        self.pout("Graph of")
-        for ptf in ptfs:
-            self.pout(" " + ptf["ptf_id"] + "")
-            url_analyse = ""
-            url_histo = ""
-            # graph technique
-            url = "https://www.boursier.com/actions/privileges/analyse-technique/{}-{},FR.html".format(ptf["ptf_name"].lower(), ptf["ptf_isin"])
-            content = self.get_content_form_url(url, header, cookies)
-            if content != "":
-                # recup du nom du gif
-                gif_names = re.search('.*/daybyday\/.*\/(.+?).gif.*', content)
-                # parfois il n'y a pas d'analyse du jour
-                if gif_names:
-                    gif_name = gif_names.group(1)
-                    id_pa = re.search('(.+?)\..*', ptf["ptf_id"]).group(1) # on ne garde que le préfixe au "."
-                    url_analyse = "https://cdn-static.boursier.com/illustrations/feeds/daybyday/at/{}.gif".format(gif_name)
-                    # Maj ptf_url_analyse
-                    self.crud.exec_sql("sqlite", """
-                    update ptf set ptf_url_analyse = :url where ptf_id = :id
-                    """, {"id": ptf["ptf_id"], "url": url_analyse})
-            # grah histo
-            url_histo = "https://cdn-graph.boursier.com/Chart.aspx?p=nbcnormal&qt=candle&vt=line&pla1=2&pld1=1&s1={},FR&xx={}&d=974,680,0&gd=71&g=qv&rnd={}".format(ptf["ptf_isin"], str(start_date_histo)[:10], random.randrange(10000))
-
-            # Maj ptf_url_analyse ptf_url_histo
-            self.crud.exec_sql("sqlite", """
-            update ptf set ptf_url_analyse = :url_analyse, ptf_url_histo = :url_histo where ptf_id = :id
-            """, {"id": ptf["ptf_id"], "url_analyse": url_analyse, "url_histo": url_histo})
-
-            time.sleep(1) # wait 1 seconds
-
-        self.pout("\n")
-
-    def extract_info_echo(self):
-        """
-            Mise à jour colonne ptf.court_terme moyen_terme avec les recommandation du site Les Echos
-            https://investir.lesechos.fr/cours/actions/ubisoft-entertain.-ubi-fr0000054470-xpar/analyse-technique
-        """
-        conn = self.crud.open_pg()
-        try:
-            ptfs = self.crud.sql_to_dict("pg", """
-                SELECT * FROM ptf where ptf_enabled = '1'
-                AND ptf_id = 'SOI.PA'
-                ORDER BY ptf_id
-                """, {})
-            self.pout("Recommandation pour")
-            for ptf in ptfs:
-                self.pout(" " + ptf["ptf_id"] + "")
-                if ptf["ptf_link"] != "":
-                    response = requests.get(ptf["ptf_link"], stream = True)
-                    if response.status_code == 200:
-                        response.raw.decode_content = True
-                        # court_terme
-                        court_terme = ""
-                        istart = response.text.find(" court terme")
-                        str = response.text[istart:istart+200]
-                        print(str)
-                        found = re.search(r' court terme.*\"\>(.*?)\<\/span\><\/div\>.*', str)
-                        court_terme = found.group(1)
-                        print(court_terme)
-                        # moyen terme
-                        moyen_terme = ""
-                        istart = response.text.find(" moyen terme")
-                        str = response.text[istart:istart+200]
-                        found = re.search(r' moyen terme.*\"\>(.*?)\<\/span\>.*', str)
-                        moyen_terme = found.group(1)
-                        print(moyen_terme)
-                        # update ptf
-                        cursor = conn.cursor()
-                        cursor.execute("""
-                        update ptf set ptf_court_terme = %(court_terme)s, ptf_moyen_terme = %(moyen_terme)s
-                        where ptf_id = %(id)s
-                        """, {"id": ptf["ptf_id"], "court_terme": court_terme, "moyen_terme": moyen_terme})
-                        conn.commit()
-
-        except BaseException as e:
-            print(traceback.format_exc())
-            conn.rollback()
-            conn.close()
-            exit(1)
-        else:
-            conn.commit()
-        finally:
-            conn.close()
-
-        self.pout("\n")
-
     def display(self, msg, with_date=True):
         """ docstring """
         if with_date==True :
@@ -988,9 +713,6 @@ class Picsou():
         if self.args.test:
             print("test ok")
 
-        if self.args.echo:
-            self.extract_info_echo()
-
         if self.args.histo:
             self.histo(self.args.histo)
 
@@ -999,9 +721,6 @@ class Picsou():
 
         if self.args.quotesgraph:
             self.quotes_graph()
-
-        if self.args.alphavantage:
-            self.alphavantage()
 
         if self.args.histograph:
            self.histo_graph()
@@ -1013,12 +732,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='picsou_batch')
     # add a -c/--color option
     parser.add_argument('-test', action='store_true', default=False, help="Test environnement")
-    parser.add_argument('-alphavantage', action='store_true', default=False, help="Récupération de l'historique des cours chez Alphavantage ")
-    parser.add_argument('-histo', type=str, help="Récupération de l'historique d'une valeur")
+    parser.add_argument('-histo', type=str, help="Récupération ponctuelle de l'historique d'une valeur")
     parser.add_argument('-histograph', action='store_true', default=False, help="Graphique historique")
     parser.add_argument('-quotes', action='store_true', default=False, help="Récupération des cours du jour")
     parser.add_argument('-quotesgraph', action='store_true', default=False, help="Graphiques QUOTES")
-    parser.add_argument('-echo', action='store_true', default=False, help="Extraction from Echo")
     # print parser.parse_args()
     if parser._get_args() == 0:
         parser.print_help()

@@ -12,3 +12,4 @@ Programme python3
 - QUOTES : historiques du cours sur 30 jours paramétrables
 - ORDERS : ordres d'achat et de vente
 
+- https://github.com/ranaroussi/yfinance

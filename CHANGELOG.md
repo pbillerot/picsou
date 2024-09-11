@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 -
 
+5.0.0 du 11 sept 2024
+------------------------
+- Suite API finance v1 yahoo, utilisation du module yfinance
+
 4.6.3 du 9 août 2023
 ------------------------
 - `added` suite commentaire multiligne suppression crlf dans le png

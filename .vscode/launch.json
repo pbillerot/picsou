@@ -4,7 +4,7 @@
 
         {
             "name": "Picsou",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "stopOnEntry": false,
             "program": "picsou.py",
@@ -17,7 +17,7 @@
         },
         {
             "name": "Test",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "stopOnEntry": false,
             "program": "picsou.py",
@@ -29,21 +29,8 @@
             "envFile": "${workspaceRoot}/.env"
         },
         {
-            "name": "Alphavantage",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry": false,
-            "program": "picsou.py",
-            "cwd": "${workspaceRoot}",
-            "args": [
-                "-alphavantage"
-            ],
-            "env": {},
-            "envFile": "${workspaceRoot}/.env"
-        },
-        {
             "name": "Quotes",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "stopOnEntry": false,
             "program": "picsou.py",
@@ -56,7 +43,7 @@
         },
         {
             "name": "Graph quotes",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "stopOnEntry": false,
             "program": "picsou.py",
@@ -68,21 +55,21 @@
             "envFile": "${workspaceRoot}/.env"
         },
         {
-            "name": "Histo valeur",
-            "type": "python",
+            "name": "Histo ABI.BR",
+            "type": "debugpy",
             "request": "launch",
             "stopOnEntry": false,
             "program": "picsou.py",
             "cwd": "${workspaceRoot}",
             "args": [
-                "-histo", "RXL.PA"
+                "-histo", "ABI.BR"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"
         },
         {
             "name": "Graph histo",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "stopOnEntry": false,
             "program": "picsou.py",
@@ -94,21 +81,8 @@
             "envFile": "${workspaceRoot}/.env"
         },
         {
-            "name": "Extract from Echo",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry": false,
-            "program": "picsou.py",
-            "cwd": "${workspaceRoot}",
-            "args": [
-                "-echo"
-            ],
-            "env": {},
-            "envFile": "${workspaceRoot}/.env"
-        },
-        {
             "name": "Batch ",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "stopOnEntry": false,
             "program": "picsou.py",
@@ -119,7 +93,7 @@
         },
         {
             "name": "Integrated Terminal/Console",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "stopOnEntry": true,
             "python": "${command:python.interpreterPath}",
@@ -131,7 +105,7 @@
         },
         {
             "name": "External Terminal/Console",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "stopOnEntry": true,
             "python": "${command:python.interpreterPath}",
