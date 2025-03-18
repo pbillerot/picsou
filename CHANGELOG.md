@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 -
 
+5.0.1 du 18 mars 2025
+------------------------
+- Correction bug yfinance - trop de requêtes simultanées - passage version 0.2.54
+
 5.0.0 du 11 sept 2024
 ------------------------
 - Suite API finance v1 yahoo, utilisation du module yfinance

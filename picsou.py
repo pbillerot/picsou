@@ -1,5 +1,6 @@
 #./venv/bin/python3
 # -*- coding:Utf-8 -*-
+
 """
     Batch de mise à jour des données de la base picsou
 """
@@ -19,10 +20,6 @@ import re
 import yfinance as yf
 import numpy as np
 
-# import urllib.request
-# pip install requets
-# import requests
-# pip install matplotlib
 import matplotlib.pyplot as plt
 # csv
 from contextlib import closing
@@ -35,6 +32,11 @@ from cpu import Cpu
 class Picsou():
     """ Actualisation des cours """
 
+    def stock(self, ticker, period="100d"):
+        df = yf.Ticker(ticker)
+        # print(df.info)
+        return df.history(period=period)
+
     def load_ticker_in_table(self, table_name, ptf_id, period):
         """
         Récupération de l'historique des cours d'une action dans une table
@@ -42,6 +44,11 @@ class Picsou():
         https://algotrading101.com/learn/yfinance-guide/
         """
         # Valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
+        # dat = yf.Tickers(ptf_id)
+        # df = dat.history(period=period)
+        df = this.stock(ptf_id, period="100d")
+        # self.display(df)
+        
         dat = yf.Tickers(ptf_id)
         df = dat.history(period=period)
         self.display(df)
@@ -310,7 +317,7 @@ class Picsou():
             """, {})
             # Suppression des records de QUOTESNEW
             cursor = conn.cursor()
-            cursor.execute("DELETE FROM QUOTESNEW", [])
+            cursor.execute("DELETE FROM QUOTESNEW", {})
             conn.commit()
 
             self.pout("Load QuotesNew of")

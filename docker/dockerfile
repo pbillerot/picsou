@@ -24,7 +24,7 @@ ENV LANGUAGE fr_FR.UTF-8
 RUN apt-get install -yq cron
 
 # INSTALLATION DES EXTENSIONS PYTHON
-RUN pip3 install --no-cache-dir requests matplotlib psycopg[binary]
+RUN pip3 install --no-cache-dir requests matplotlib psycopg[binary] yfinance
 
 WORKDIR /app
 
