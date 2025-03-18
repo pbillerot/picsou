@@ -37,62 +37,6 @@ class Picsou():
         # print(df.info)
         return df.history(period=period)
 
-    def load_ticker_in_table(self, table_name, ptf_id, period):
-        """
-        Récupération de l'historique des cours d'une action dans une table
-        https://www.geeksforgeeks.org/how-to-use-yfinance-api-with-python/
-        https://algotrading101.com/learn/yfinance-guide/
-        """
-        # Valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
-        # dat = yf.Tickers(ptf_id)
-        # df = dat.history(period=period)
-        df = this.stock(ptf_id, period="100d")
-        # self.display(df)
-        
-        dat = yf.Tickers(ptf_id)
-        df = dat.history(period=period)
-        self.display(df)
-        exit(1)
-        
-        conn = self.crud.open_pg()
-        try:
-            # cols = 'id, date, open, high, low, close, adjclose, volume '
-            cols = 'id, date, open, high, low, close, volume '
-            vals = []
-            for index, r in df.iterrows():
-                self.display("iter")
-                self.display(index)
-                self.display(r)
-                date_str = index.strftime("%Y-%m-%d")
-                row = [f"'{ptf_id}'", f"'{date_str}'"]
-                for x in r:
-                    row.append(f"'{str(x)}'")
-                row_str = ', '.join(row)
-                vals.append(row_str)
-            # self.display(ptf_id)
-            # self.display(vals)
-            f_values = [] 
-            for v in vals:
-                f_values.append(f'({v})')
-
-            # Handle inputting NULL values
-            f_values = ', '.join(f_values) 
-            f_values = re.sub(r"('None')", "NULL", f_values)
-
-            sql = f"insert into {table_name} ({cols}) values {f_values};" 
-            # enregistrement dans la table
-            cursor = conn.cursor()
-            cursor.execute(sql, {})
-            conn.commit()
-        except BaseException as e:
-            print(traceback.format_exc())
-            conn.rollback()
-            conn.close()
-            exit(1)
-        else:
-            conn.commit()
-        finally:
-            conn.close()
     def load_quotes_in_table(self, table_name, ptf_id, period):
         """
         Récupération de l'historique des cours d'une action dans une table
@@ -100,7 +44,7 @@ class Picsou():
         
         """
         # Valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
-        df = yf.download(ptf_id, period=period, progress=False)
+        df = yf.download(ptf_id, period=period, auto_adjust=True, progress=False)
         conn = self.crud.open_pg()
         try:
             cols = 'id, date, close, high, low, open, volume '
@@ -160,7 +104,6 @@ class Picsou():
                 # remplissage de la table quotes - dernière quote dans self.quote
                 # Valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
                 self.load_quotes_in_table("HISTO", ptf["ptf_id"], "1y")
-                # self.load_ticker_in_table("HISTO", ptf["ptf_id"], "1y")
             self.display("")
             cursor.execute("""
             insert into QUOTES select * from HISTO ON CONFLICT DO NOTHING
@@ -328,7 +271,6 @@ class Picsou():
                 # remplissage de la table quotes - dernière quote dans self.quote
                 # Valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
                 self.load_quotes_in_table("QUOTESNEW", ptf["ptf_id"], "1mo")
-                # self.load_ticker_in_table("QUOTESNEW", ptf["ptf_id"], "1mo")
             self.display("")
             # suppression de la dernière cotation pour intégrer la cotation du jour
             cursor.execute("""
