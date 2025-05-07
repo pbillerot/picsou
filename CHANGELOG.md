@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 -
 
+5.0.2 du 7 mai 2025
+------------------------
+- Correction bug calcul rsi si down est à 0
+
 5.0.1 du 18 mars 2025
 ------------------------
 - Correction bug yfinance - trop de requêtes simultanées - passage version 0.2.54
