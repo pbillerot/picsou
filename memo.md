@@ -8,9 +8,7 @@
 sudo apt install virtualenv
 virtualenv --python=/usr/bin/python3 venv
 
-dans vscodium crtl+shift+P Venv
-
-source .venv/bin/activate
+source venv/bin/activate
 
 pip3 install matplotlib requests psycopg[binary] yfinance
 

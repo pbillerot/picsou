@@ -16,6 +16,8 @@ class Cpu:
         seed = deltas[:n+1]
         up = seed[seed>=0].sum()/n
         down = -seed[seed<0].sum()/n
+        if down == 0:
+            down = 1
         rs = up/down
         rsi = np.zeros_like(data)
         rsi[:n] = 100. - 100./(1.+rs)
@@ -31,6 +33,8 @@ class Cpu:
 
             up = (up*(n-1) + upval)/n
             down = (down*(n-1) + downval)/n
+            if down == 0:
+                down = 1
             rs = up/down
             rsi[i] = 100. - 100./(1.+rs)
         return rsi[len(rsi)-1]

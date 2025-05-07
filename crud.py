@@ -179,15 +179,15 @@ class Crud:
             print(getattr(ex, 'message', repr(ex)))
         return file_list
 
-    def get_key_from_bracket(self, text):
-        """ Retourne la clé entre parenthèses
-        "Label bla bla (key)" va retourner "key"
-        """
-        res = re.search('.*\((.*)\).*', text)
-        if res:
-            return res.group(1)
-        else:
-            return text
+    # def get_key_from_bracket(self, text):
+    #     """ Retourne la clé entre parenthèses
+    #     "Label bla bla (key)" va retourner "key"
+    #     """
+    #     res = re.search('.*\((.*)\).*', text)
+    #     if res:
+    #         return res.group(1)
+    #     else:
+    #         return text
 
     def load_class(self, full_class_string):
         """
