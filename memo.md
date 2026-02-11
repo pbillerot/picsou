@@ -20,6 +20,10 @@ dans vscodium crtl+shift+P Venv
 - Installer l'extension ```ms-python.python```
 - Installer pylint pour python ```pip3 install pylint rope```
 
+## GIT
+- git reset --hard
+- git pull
+
 ## SQL
 - Utilisation de DB Browser for SQLite http://sqlitebrowser.org/
 - sudo apt install sqlitebrowser

@@ -79,6 +79,21 @@ class Picsou():
         finally:
             conn.close()
 
+    def testSql(self):
+        conn = self.crud.open_pg()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT count(*) FROM ptf", [])
+            conn.commit()
+        except BaseException as e:
+            print(traceback.format_exc())
+            conn.rollback()
+            conn.close()
+            exit(1)
+        else:
+            conn.commit()
+        finally:
+            conn.close()
 
     def histo(self, quote_id):
         """
@@ -250,6 +265,29 @@ class Picsou():
             dmme100.clear()
         self.pout("\n")
 
+    def events(self, ptf_id):
+        conn = self.crud.open_pg()
+        try:
+            ptf = self.crud.sql_to_dict("pg", """
+            SELECT * FROM ptf where ptf_id = %(id)s
+            """, {"id": ptf_id})
+            # création d'un events
+            cursor = conn.cursor()
+            cursor.execute("""
+            INSERT INTO EVENTS (events_ptf_id, event_datetime, events_quote, events_rsi)
+            VALUES (%(id)s, %(datetime)s, %(quote)s, %(rsi)s)
+            """, {"id": ptf_id, "datetime": str(datetime.datetime.now())[:19], "quote": ptf["quote"], "rsi": ptf["rsi"]})
+            conn.commit()
+        except BaseException as e:
+            print(traceback.format_exc())
+            conn.rollback()
+            conn.close()
+            exit(1)
+        else:
+            conn.commit()
+        finally:
+            conn.close()
+
     def quotes(self):
         conn = self.crud.open_pg()
         try:
@@ -286,14 +324,14 @@ class Picsou():
             self.pout("Compute Quotes of")
             for ptf in ptfs:
                 self.pout(" {}".format(ptf["ptf_id"]))
-                close, close1, rsi, trend, candle0, candle1, candle2 = self.quotes_compute(ptf)
+                close, close1, rsi, macd, trend, candle0, candle1, candle2 = self.quotes_compute(ptf)
 
                 # maj quote et gain du jour dans ptf
                 cursor = conn.cursor()
                 cursor.execute("""
-                update ptf set ptf_quote = %(close)s::numeric, ptf_gain = ((%(close)s::numeric-%(close1)s::numeric)/%(close1)s::numeric)*100, ptf_candle0 = %(candle0)s, ptf_candle1 = %(candle1)s, ptf_candle2 = %(candle2)s, ptf_rsi = %(rsi)s, ptf_trend = %(trend)s
+                update ptf set ptf_quote = %(close)s::numeric, ptf_gain = ((%(close)s::numeric-%(close1)s::numeric)/%(close1)s::numeric)*100, ptf_candle0 = %(candle0)s, ptf_candle1 = %(candle1)s, ptf_candle2 = %(candle2)s, ptf_rsi = %(rsi)s, ptf_macd = %(macd)s, ptf_trend = %(trend)s
                 where ptf_id = %(id)s
-                """, {"id": ptf["ptf_id"], "close1": close1, "close": close, "candle0": candle0, "candle1": candle1, "candle2": candle2, "rsi": rsi, "trend": trend})
+                """, {"id": ptf["ptf_id"], "close1": close1, "close": close, "candle0": candle0, "candle1": candle1, "candle2": candle2, "rsi": rsi, "macd": macd, "trend": trend})
                 conn.commit()
             # maj orders quote et gain en cours
             cursor.execute("""
@@ -336,6 +374,7 @@ class Picsou():
         candle1 = 0
         candle2 = 0
         rsi = 0
+        macd = 0
         trend = 0
         conn = self.crud.open_pg()
         try:
@@ -366,6 +405,8 @@ class Picsou():
                 dfloat.append(close0)
                 if iquote >= 14:
                     rsi = self.cpu.compute_rsi(dfloat, 14)
+                if iquote >= 26:
+                    macd = self.cpu.ema(dfloat, 12)-self.cpu.ema(dfloat, 26)
                 if iquote >= 114:
                     trend0 = self.cpu.ema(dfloat, 100)
                     trend1 = self.cpu.ema(dfloat[:iquote-14], 100)
@@ -391,8 +432,8 @@ class Picsou():
                 min_0 = float(quote["low"])
                 clo_0 = float(quote["close"])
                 # candle
-                if quote["id"] == 'STMPA.PA' and quote["date"] == '2023-07-14':
-                    pass
+                # if quote["id"] == 'STMPA.PA' and quote["date"] == '2023-07-14':
+                #     pass
                 # étoîle du soir + + -
                 if clo_2 > ope_2 and clo_1 > ope_1 and clo_0 < ope_0 \
                     and ope_1 > clo_2 and ope_1 > ope_0 :
@@ -488,7 +529,7 @@ class Picsou():
             conn.commit()
         finally:
             conn.close()
-        return close0, close1, rsi, trend, candle0, candle1, candle2
+        return close0, close1, rsi, macd, trend, candle0, candle1, candle2
 
     def quotes_graph(self):
         """
@@ -711,10 +752,11 @@ class Picsou():
         # Chargement des paramètres
         self.crud = Crud(args=self.args)
 
-        self.display("Picsou en action...")
+        self.display(self.crud.config["title"])
 
         if self.args.test:
-            print("test ok")
+            self.testSql()
+            print("test connexion db ok")
 
         if self.args.histo:
             self.histo(self.args.histo)

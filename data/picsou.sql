@@ -39,8 +39,19 @@ CREATE TABLE public.histo (
 ALTER TABLE public.histo OWNER TO beedule;
 
 --
--- Name: orders; Type: TABLE; Schema: public; Owner: beedule
+-- Name: events; Type: TABLE; Schema: public; Owner: beedule
 --
+
+CREATE TABLE public.events (
+    events_id integer NOT NULL,
+    events_ptf_id character varying(20) DEFAULT ''::character varying,
+    events_datetime character varying(30) DEFAULT ''::character varying,
+    events_quote numeric DEFAULT '0'::numeric,
+    events_rsi numeric DEFAULT '0'::numeric
+);
+
+
+ALTER TABLE public.events OWNER TO beedule;
 
 CREATE TABLE public.orders (
     orders_id integer NOT NULL,

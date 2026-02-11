@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 -
 
+5.1.0 du 11 fev. 2026
+------------------------
+- ajout macd dans ptf
+
 5.0.3 du 11 fev. 2026
 ------------------------
 - test panda
