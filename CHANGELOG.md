@@ -5,6 +5,10 @@ Historique des modifications
 ### À venir :
 -
 
+5.0.3 du 11 fev. 2026
+------------------------
+- test panda
+
 5.0.2 du 7 mai 2025
 ------------------------
 - Correction bug calcul rsi si down est à 0

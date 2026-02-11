@@ -1,7 +1,6 @@
 {
     "version": "0.2.0",
     "configurations": [
-
         {
             "name": "Picsou",
             "type": "debugpy",
@@ -20,7 +19,7 @@
             "type": "debugpy",
             "request": "launch",
             "stopOnEntry": false,
-            "program": "picsou.py",
+            "program": "pnew.py",
             "cwd": "${workspaceRoot}",
             "args": [
                 "-test"
@@ -55,14 +54,14 @@
             "envFile": "${workspaceRoot}/.env"
         },
         {
-            "name": "Histo ABI.BR",
+            "name": "Histo MEDCL.PA",
             "type": "debugpy",
             "request": "launch",
             "stopOnEntry": false,
             "program": "picsou.py",
             "cwd": "${workspaceRoot}",
             "args": [
-                "-histo", "ABI.BR"
+                "-histo", "MEDCL.PA"
             ],
             "env": {},
             "envFile": "${workspaceRoot}/.env"
